@@ -9,6 +9,23 @@ setClass("Population",
                    fit = c(), generation = 0)
 )
 
+##### Constructor #####
+
+
+population <- function(encoding = "binary", Size = 200, Length = 200, initializeFunction = NA,...){
+  ### defense mechanism ###
+  ### To be done ###
+  
+  ### Assignment ###
+  newObject <- new("Population")
+  
+  newObject@encoding = "binary"
+  newObject@popSize = Size
+  newObject@geneLength = Length
+  newObject@genePool = initializeFunction(Size, Length)
+  newObject@fit = rep(0, Size)  
+  newObject@generation = 0
+}
 
 
 
