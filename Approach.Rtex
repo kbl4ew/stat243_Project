@@ -1,0 +1,39 @@
+\documentclass{article}
+\usepackage{graphicx}
+%% for inline R code: if the inline code is not correctly parsed, you will see a message
+\newcommand{\rinline}[1]{SOMETHING WRONG WITH knitr}
+%% begin.rcode setup, include=FALSE
+% opts_chunk$set(fig.path='figure/latex-', cache.path='cache/latex-')
+%% end.rcode
+\begin{document}
+\title{Stat 243 Problem Set 6}
+\author{Joy Hou Jue, Kevin Li, Greta Olesen}
+\maketitle
+
+\noindent Project Approach:
+\noindent In order to effectively create a Genetic Algorithm based optimizer to solve variable selection problems for Generalized Linear Models and Linear Models, we would need to meet the following basic requirements: \\
+\begin{enumerate}
+  \item initial randomization to create a population of sample size N (initRandomize)
+  \item an evaluation function which will evaluate the different individuals/models using the AIC as the objective       criterion/fitness
+  \item main code which carries out the heuristic-based optimization (generic algorithm) to optimize towards the minimum value (select.R)
+  \item test code which contains all test cases (test.R)
+\end{enumerate}
+
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
