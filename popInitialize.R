@@ -1,0 +1,32 @@
+############## Code to randomize the first generation for generic algorithm #####################
+
+##### Input #####
+# 1. popSize: The population size in each generation
+# 2. geneLength: the number of genes in the chromosome
+# 3. zeroToOneRatio: the change from a zero to one for mutations and initialization. (This option allows us to control the number of set genes in the chromosome. Since we are conducting variable selection, this parameter may be higher than usual.)
+
+##### Output #####
+# The output is a matrix of size (popSize, geneLength) with the values initiated
+# We do not want to any individual with all zeros hence we guarantee that at least one element is 1.
+
+##### Reference: genalg package
+# The code is an adoption of the basic generic algorith implementation in the genalg package in R
+
+##### Implementation #####
+popInitialize <- function(popSize = 0, geneLength = 0, zeroToOneRatio = NA){
+  
+  if(zeroToOneRatio == NA){
+    zeroToOneRation = 0;    
+  }
+  
+  pop <- matrix(nrow = popSize, ncol = geneLength);
+  
+  ##### Randomly initialize the first generation #####
+  for (child in 1:popSize){
+    population[child, ] = sample(c(rep(0, zeroToOneRatio), 1), geneLength, replace = TRUE);
+    while(sum(population[child,] == 0)){
+      population[child, ] = sample(c(rep(0, zeroToOneRatio), 1), geneLength, replace = TRUE);      
+    }
+  }
+  return(population)
+}
