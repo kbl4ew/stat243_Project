@@ -1,0 +1,41 @@
+
+We start with a list of possible variables in a model.
+The article refers to each statistical model as an 'individual'
+
+STEP 1
+* Randomly generate P 'individuals', or different models in the format of 10011101001....0
+	* '1' indicates that the respective variable is included in the model, 0 means it is not included
+		* Example: we have these possible predictors for running speed: height, weight, age. 
+		   	 * 101 means that only height and age are included in this particular model to predict speed
+	* Choose C <= P <= 2C where C is the # of possible predictors
+
+EACH ITERATION:
+
+1) Calculate AIC (or some other power function) for each of the P models, indicating the strength of the model (or 'individual')
+  	   * Rank each individual/model by AIC
+
+2)  Follow this procedure:
+       a) Draw 2 models without replacement from the list of P models of the t-1 iteration (the list of P models that we had from the iteration prior)
+       	      * Sampling probabilities correspond to the AIC rankings (needs clarification)
+  	      * Without replacement - don’t want a model to be paired with itself (check if right)
+       b) Put both models back into the sampling pool (of all P models)
+       c) go back to a) and continue until we have drawn P models and P/2 model-pairs from t-1 iteration's list of P models
+   Now we have P sampled models and P/2 pairs to work with.
+
+3) Perform CROSSOVER and MUTATIONS on the pairs
+  	  * First perform Crossover:
+		* Ex: Our first pair is 10011011; 01001001
+		      	Randomly choose cutoff = 3. 100|11011; 010|01001 --> 'offspring'\new models are: 10001001 or 01011011
+  	  * Second, perform Mutations:
+		* Find common values at same position on parent models.
+			* In example above, there is a 0 in the 3rd position, 1 in 5th position, etc. for BOTH parents
+		       	* The values of these in the offspring are eligible for mutations
+		* Switch 0 to 1 (or 1 to 0) in some of the post-crossover eligible positions
+			* Apply mutations at a low rate, probably 1% (see article)
+
+WHEN TO STOP ITERATIONS
+* From article p. 80:
+	* Choose max number of iterations to begin with, or
+	* Stop when genetic diversity within chromosomes in current generation is sufficiently low
+		* i.e. when all the models have very similar variables
+
