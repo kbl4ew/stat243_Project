@@ -6,7 +6,7 @@
 % opts_chunk$set(fig.path='figure/latex-', cache.path='cache/latex-')
 %% end.rcode
 \begin{document}
-\title{Stat 243 Problem Set 6}
+\title{Stat 243 Project}
 \author{Joy Hou Jue, Kevin Li, Greta Olesen}
 \maketitle
 
@@ -15,8 +15,17 @@
 \begin{enumerate}
   \item initial randomization to create a population of sample size N (initRandomize)
   \item an evaluation function which will evaluate the different individuals/models using the AIC as the objective       criterion/fitness
-  \item main code which carries out the heuristic-based optimization (generic algorithm) to optimize towards the minimum value (select.R)
-  \item test code which contains all test cases (test.R)
+  \item main code which carries out the heuristic-based optimization (generic algorithm) to optimize towards the minimum value (select.R) 
+  \item test code which contains all test cases (test.R) \\
+\end{enumerate}
+
+\noindent Assignments \\
+\begin{enumerate}
+  \item initial randomization (Kevin: Done with first iteration; Joy: Check and improve) 
+  \item EvalFunction (Joy: First Iteration)
+  \item select/genalg (Greta: First Iteration in process; Kevin: Second Iteration)
+  \item Test code (Everyone: Write individal unit testing code and we will write the benchmarking test case together)
+
 \end{enumerate}
 
 
