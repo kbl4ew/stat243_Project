@@ -2,14 +2,12 @@
 ## added variables: cross_rate, m_rate
 
 set.seed(1)
-x = matrix(sample(c(1,0), 24, replace = TRUE, prob=c(.7, .3)), nrow = 6)
+x = matrix(sample(c(1,0), 30, replace = TRUE, prob=c(.7, .3)), nrow = 6)
 popSize = dim(x)[1]
 weights = (1:popSize)/sum(1:popSize) # would actually come from AIC/evaluation function
 geneLength = dim(x)[2] 
 cross_rate = .9
 m_rate = .1
-v1 = x[1,]
-v2 = x[2,]
 
 #############################################
 #### 1st FUNCTION: SAMPLE FROM 'PARENTS' ####
@@ -52,7 +50,7 @@ test1
 # 1. Post-crossover v1 and v2 in matrix of size 2 by popSize
 # We do not want to any individual with all zeros hence we guarantee that at least one element is 1.
 
-crossover <- function(v1, v2, popSize, geneLength, cross_rate=1){
+crossover <- function(v1, v2, geneLength, cross_rate=1){
   cross_bool = sample(c(TRUE, FALSE), 1, prob = c(cross_rate, 1-cross_rate))
   
   if(cross_bool){
@@ -68,9 +66,9 @@ crossover <- function(v1, v2, popSize, geneLength, cross_rate=1){
   else
     return(rbind(v1,v2)) # return them unchanged
 }
-
-test=matrix(NA, nrow=2, ncol = 4)
-test[1:2,] <- crossover(v1, v2, popSize, geneLength, cross_rate); test
+v1=(rep(0,5))
+v2=(rep(1,5))
+check = crossover(v1, v2, geneLength = length(v1)); check
 
 ############################################
 ######### 3rd FUNCTION: MUTATIONS ##########
@@ -83,7 +81,6 @@ test[1:2,] <- crossover(v1, v2, popSize, geneLength, cross_rate); test
 
 ##### Output #####
 # 1. Post-mutated v1 and v2 in matrix of size 2 by popSize
-# TO DO: guarantee that at least one element is 1.
 
 mutation <- function(v1, v2, m_rate){
   m_loci = which(v1==v2)
@@ -97,24 +94,34 @@ mutation <- function(v1, v2, m_rate){
     return(rbind(v1,v2)) # return v1 v2 and dont mutate
   
   else{
-    ## Change v1:
-    v1_loci = m_loci[m_bool1] # mutation locations
-    v1_values = v1[v1_loci]   # value at the mutation locations
-    v1[v1_loci][v1_values == 1] <- 0
-    v1[v1_loci][v1_values == 0] <- 1
+    v1_copy = v1
+    v2_copy = v2
+    v1_copy[m_loci][m_bool1] <- as.numeric(!v1_copy[m_loci][m_bool1])
+    v2_copy[m_loci][m_bool2] <- as.numeric(!v2_copy[m_loci][m_bool2])
     
-    ## Change v2
-    v2_loci = m_loci[m_bool2] # mutation locations
-    v2_values = v2[v2_loci]   # value at the mutation locations
-    v2[v2_loci][v2_values == 1] <- 0
-    v2[v2_loci][v2_values == 0] <- 1
+    if(sum(v1_copy) == 0) v1_copy <- v1
+    if(sum(v2_copy)== 0) v2_copy <- v2
     
-    return(rbind(v1,v2))
+    return(rbind(v1_copy,v2_copy))
+    
+    # old version
+#    v1_loci = m_loci[m_bool1] # mutation locations
+#    v2_loci = m_loci[m_bool2] # mutation locations 
+#     v1_values = v1[v1_loci]   # value at the mutation locations
+#     v1[v1_loci][v1_values == 1] <- 0
+#     v1[v1_loci][v1_values == 0] <- 1
+#     ## Change v2
+#     v2_values = v2[v2_loci]   # value at the mutation locations
+#     v2[v2_loci][v2_values == 1] <- 0
+#     v2[v2_loci][v2_values == 0] <- 1
+    
   }
 }
 
-test2=matrix(NA, nrow=2, ncol = 4)
-test2[1:2,] <- mutation(v1, v2, m_rate); test2
+v1 = rep(c(1,0), 3)
+v2 = rep(1, 6)
+check2 = mutation(v1, v2, m_rate=1); check2 # mutates every time
+check2 = mutation(v1, v2, m_rate=0); check2 # never mutates
 
 
 ############################################
