@@ -13,20 +13,29 @@
 # The code is an adoption of the basic generic algorith implementation in the genalg package in R
 
 ##### Implementation #####
-popInitialize <- function(popSize = 0, geneLength = 0, zeroToOneRatio = NA){
+popInitialize <- function(popSize = 0, geneLength = 0, zeroToOneRatio){
   
-  if(zeroToOneRatio == NA){
+  if(is.na(zeroToOneRatio)){
     zeroToOneRation = 0;    
   }
-  
+  else{
+    print('zeroToOneRatio accepted')
+  }
   pop <- matrix(nrow = popSize, ncol = geneLength);
-  
+
   ##### Randomly initialize the first generation #####
   for (child in 1:popSize){
-    population[child, ] = sample(c(rep(0, zeroToOneRatio), 1), geneLength, replace = TRUE);
-    while(sum(population[child,] == 0)){
-      population[child, ] = sample(c(rep(0, zeroToOneRatio), 1), geneLength, replace = TRUE);      
+    pop[child, ] = sample(c(rep(0, zeroToOneRatio), 1), geneLength, replace = TRUE);
+    #print(child)
+    #print(pop[child, ])
+    while(sum(pop[child,]) == 0){
+      pop[child, ] = sample(c(rep(0, zeroToOneRatio), 1), geneLength, replace = TRUE);   
+      #print('in the loop')
+      #print(pop[child, ])
     }
   }
-  return(population)
+  return(pop)
 }
+
+##### Test Case #####
+tmp <- popInitialize(6, geneLength = 4, zeroToOneRatio = 2 )
