@@ -80,23 +80,26 @@ select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = 
   
   ##### After a fixed number of iterations, we return the best model #####
   return(currentGenePool)
+  
+  ##### Print the best model #####
+  
 }
 
+#best <- function(currentGenePool, criterion, )
+
+
+
+
+### test code
+result <- select(X, y, popSize = 20, max_iterations = 50, crossRate = 0.95, mRate = 0.001)
 
 
 
 
 
 
-
-
-
-
-
-
-
-
-
+X
+y
 
 
 

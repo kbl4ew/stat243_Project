@@ -99,10 +99,10 @@ evalFunction <- function(currentGenePool, type, criterion, family = NA, criFun =
 
 
 
-
-
-
-
+tmp <- evalFunction(currentGenePool, "lm", "AIC")
+dim(tmp)
+tmp[,which(tmp[2, ] == 1)]
+currentGenePool[which(tmp[2, ] == 1),]
 
 
 
