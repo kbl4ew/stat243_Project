@@ -79,19 +79,47 @@ select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = 
   }
   
   ##### After a fixed number of iterations, we return the best model #####
-  return(currentGenePool)
-  
+  #return(currentGenePool)
+  final <- best(currentGenePool, type, criterion)
   ##### Print the best model #####
-  
+  return(final)
 }
 
-#best <- function(currentGenePool, criterion, )
+best <- function(pool, type, criterion, family = NA, criFun = NULL){
+  print('In best')
+  tmp <- evalFunction(pool, type, criterion)
+  #print(result)
+  final <- 0
+  if(type == "lm"){
+    print('lm flow')
+    index <- which(tmp[2,] == min(tmp[2,]), arr.ind = T)[1]
+    print(index)
+    index2 <- which(pool[index,] != 0, arr.ind = T)
+    print(index2)
+    final <- lm(y~as.matrix(X[,index2]))
+    print('success')
+  }
+  else if (type == "glm"){
+    print('glm flow')
+    index <- which(tmp[2,] == min(tmp[2,]), arr.ind = T)
+    index2 <- which(pool[index,] != 0, arr.ind = T)[1]
+    final <- glm(as.vector(y)~as.matrix(X[,index2]),family)
+
+  }
+  ### TO be fixed here
+  else{
+    final <- 0
+  }
+  print(final)
+  print(paste("The resulting criterion is: ", criterion, AIC(final)))
+  return(final)
+}
 
 
 
 
 ### test code
-result <- select(X, y, popSize = 20, max_iterations = 50, crossRate = 0.95, mRate = 0.001)
+result <- select(X, y, popSize = 16, max_iterations = 50, crossRate = 0.95, mRate = 0.001)
 
 
 
