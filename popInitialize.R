@@ -38,5 +38,5 @@ popInitialize <- function(popSize = 0, geneLength = 0, zeroToOneRatio){
 }
 
 ##### Test Case #####
-tmp <- popInitialize(6, geneLength = 4, zeroToOneRatio = 2 )
+tmp <- popInitialize(6, geneLength = 10, zeroToOneRatio = 2 )
 
