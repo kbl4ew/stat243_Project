@@ -52,14 +52,16 @@ evalLm <- function(genePool, X, y, criterion = "AIC",criFun = NA){
 #evalLm(test, X, y)
 #rank(AICVals) / sum(1:length(AICVals)
 
-evalGlm <- function(genePool, X, y,family = gaussian, criterion = "AIC", criFun){
+evalGlm <- function(genePool, X, y,family = "gaussian", criterion = "AIC", criFun){
   popSize <- dim(genePool)[1] 
   geneLength <- dim(genePool)[2]
   result <- matrix(nrow = 1, ncol = popSize)
   rownames(result) <- c("criterion value")
   
   for (i in 1:popSize){
-    fit <- glm(y~as.matrix(X[,which(genePool[i,] != 0, arr.ind = T)]),family = family)
+    #print("entered loop")
+    fit <- glm(as.vector(y)~as.matrix(X[,which(genePool[i,] != 0, arr.ind = T)]),family)
+    #print("got through this iteration")
     if (criterion == "AIC"){
       criValue = AIC(fit)
     } else if (criterion == "BIC") {
@@ -69,7 +71,7 @@ evalGlm <- function(genePool, X, y,family = gaussian, criterion = "AIC", criFun)
     }
     result[1,i] = criValue
   }
-  }
+  
   #   DT <- as.data.table(t(result))
   #   DT[, AICRank := rank(AIC, ties.method = "first")]
   #   return(t(DT))
