@@ -41,15 +41,15 @@ evalLm <- function(genePool, X, y, criterion = "AIC",criFun = NA){
 #   return(t(DT))
   
   obj <- rbind(result, rank(result), rank(result)/sum(1:popSize))
-  row.names(obj) <- c("", "ranks", "samplingProbs")
+  row.names(obj) <- c(criterion, "ranks", "samplingProbs")
   return(obj)
 }
 
 
-evalLm()
-dim(mtcars)
+#evalLm()
+#dim(mtcars)
 
-evalLm(test, X, y)
+#evalLm(test, X, y)
 #rank(AICVals) / sum(1:length(AICVals)
 
 evalGlm <- function(genePool, X, y,family = gaussian, criterion = "AIC", criFun){
@@ -75,6 +75,29 @@ evalGlm <- function(genePool, X, y,family = gaussian, criterion = "AIC", criFun)
   #   return(t(DT))
   
   obj <- rbind(result, rank(result), rank(result)/sum(1:popSize))
-  row.names(obj) <- c("criterion value", "ranks", "samplingProbs")
+  row.names(obj) <- c(criterion, "ranks", "samplingProbs")
   return(obj)
 }
+
+evalFunction <- function(type, criterion, family = NA, criFun = NULL){
+  if(type == "lm"){
+    return(evalLm(genePool, X, y, criterion = "AIC",criFun = NA))
+  }
+  else if (type == "glm"){
+    return(evalGlm(genePool, X, y, family, criterion, criFun))
+  }
+  else{
+    return(c())
+  }
+  
+}
+
+
+
+
+
+
+
+
+
+
