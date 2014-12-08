@@ -12,13 +12,15 @@
 
 ##### Output: #####
 ### result <- the best model based on the evaluation criterion
-
-select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = "lm", family = NA, evalFunction = NULL,max_iterations = 500, min_iterations = 50, mutation_prob = NA,  zeroToOneRatio = 10){
+### Test Case (To be deleted)
+X <- mtcars[,2:11]
+y <- mtcars[,1]
+select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = "lm", family = NA, criFun = NULL, max_iterations = 500, min_iterations = 50, crossRate = NA, mRate = NA, zeroToOneRatio = 2){
   ##### Defense coding #####
-  X <- matrix(X)
+  X <- as.matrix(X)
   y <- as.vector(y)
-  if(is.na(mutation_Prob)){
-    mutation_Prob = 1/(dim(X)[1]);
+  if(is.na(mRate)){
+    mRate = 1/(dim(X)[1]);
   }
   
   if(is.null(evalFunction)){
@@ -36,10 +38,46 @@ select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = 
   ##### Beginning of the generic algorithm #####
   geneLength <- dim(X)[2]
   ##### Initializing the first generation of individuals/ models
-  initial_population <- popInitialize(popSize = 0, geneLength, zeroToOneRatio)
-  
+  initialPopulation <- popInitialize(popSize, geneLength, zeroToOneRatio)
+  currentGenePool <- initialPopulation
   ### Calculating the sampling probabilities for the first generations of individuals/models
-  samplingProb <- evalFunction(type, criterion, family, evalFunction)
+  #samplingProb <- evalFunction(currenGenePool, type, criterion, family, criFun)[3,]
+  samplingProb <- evalFunction(currentGenePool, type, criterion, family)[3,]
+  ### While loop to handle convergence/ exceedance of min iteration/ capped by max iteration
+  #iter = 0;
+  ### Condition to be satisfied 
+  ### if iter < min_iteration
+  #while((iter <= min_iterations)&& !(iter >= max_iterations))
+  for(i in 1:max_iterations){
+    # really we will have predetermined # of iterations
+    #xSamp <- updateSamp(x, popSize, weights)
+    geneSample <- updateSamp(currentGenePool, popSize, samplingProb)
+    #xCrossed = matrix(NA, nrow = popSize, ncol = geneLength)
+    crossedSample <- matrix(NA, nrow = popSize, ncol = geneLength)
+    #for(i in seq(1, popSize, by = 2))
+    #  xCrossed[i:(i+1),] <- crossover(xSamp[i,], xSamp[i+1,], popSize, geneLength, crossRate)
+    for(i in seq(1, popSize, by = 2)){
+      print(i)
+      crossedSample[i:(i+1),] <- crossover(geneSample[i,], geneSample[i+1, ], geneLength, crossRate)
+    }
+    #
+    #xMut = matrix(NA, nrow = popSize, ncol = geneLength)
+    mutatedSample <- matrix(NA, nrow = popSize, ncol = geneLength)
+    #for(i in seq(1, popSize, by = 2))
+    #  xMut[i:(i+1),] <- mutation(xCrossed[i,], xCrossed[i+1,], mRate)  
+    for (i in seq(1, popSize, by = 2)){
+      mutatedSample <- mutation(crossedSample[i,], crossedSample[i+1,], popSize, mRate)
+    }
+    ### Here we would add the evaluation function ###
+    # weights = AIC(  )
+    currentGenePool <- mutatedSample
+    samplingProb <- evalFunction(currenGenePool, type, criterion, family, criFun)[3,]
+    #x = xMut # Update x-matrix with our new one!
+    print(x) # take out later
+  }
+  
+  ##### After a fixed number of iterations, we return the best model #####
+  return(currentGenePool)
 }
 
 
