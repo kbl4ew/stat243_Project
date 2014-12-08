@@ -66,12 +66,14 @@ select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = 
     #for(i in seq(1, popSize, by = 2))
     #  xMut[i:(i+1),] <- mutation(xCrossed[i,], xCrossed[i+1,], mRate)  
     for (i in seq(1, popSize, by = 2)){
-      mutatedSample <- mutation(crossedSample[i,], crossedSample[i+1,], popSize, mRate)
+      #mutatedSample <- mutation(crossedSample[i,], crossedSample[i+1,], popSize, mRate)
+      mutatedSample[i:(i+1),] <- mutation(crossedSample[i,], crossedSample[i+1,], mRate)
     }
+    
     ### Here we would add the evaluation function ###
     # weights = AIC(  )
     currentGenePool <- mutatedSample
-    samplingProb <- evalFunction(currenGenePool, type, criterion, family, criFun)[3,]
+    samplingProb <- evalFunction(currentGenePool, type, criterion, family, criFun)[3,]
     #x = xMut # Update x-matrix with our new one!
     print(x) # take out later
   }

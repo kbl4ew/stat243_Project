@@ -83,11 +83,11 @@ evalGlm <- function(genePool, X, y,family = "gaussian", criterion = "AIC", criFu
 
 evalFunction <- function(currentGenePool, type, criterion, family = NA, criFun = NULL){
   if(type == "lm"){
-    print('lm flow')
+    #print('lm flow')
     return(evalLm(currentGenePool, X, y, criterion = "AIC",criFun))
   }
   else if (type == "glm"){
-    print('glm flow')
+    #print('glm flow')
     return(evalGlm(currentGenePool, X, y, family, criterion, criFun))
   }
   ### TO be fixed here
