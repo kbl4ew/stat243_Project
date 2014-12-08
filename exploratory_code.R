@@ -69,7 +69,7 @@ crossover <- function(v1, v2, geneLength, crossRate){
 v1=(rep(0,5))
 v2=(rep(1,5))
 check = crossover(v1, v2, geneLength = length(v1)); check
-
+check = crossover(v1, v2, geneLength = length(v1), crossRate = 0.5)
 ############################################
 ######### 3rd FUNCTION: MUTATIONS ##########
 ############################################
