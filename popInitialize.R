@@ -19,7 +19,7 @@ popInitialize <- function(popSize = 0, geneLength = 0, zeroToOneRatio){
     zeroToOneRation = 0;    
   }
   else{
-    print('zeroToOneRatio accepted')
+    #print('zeroToOneRatio accepted')
   }
   pop <- matrix(nrow = popSize, ncol = geneLength);
 
