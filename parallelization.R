@@ -5,7 +5,7 @@ library(iterators)
 nCores <- 4  
 registerDoParallel(nCores) 
 
-crossedParallel = function(x, geneLength, crossRate){
+crossedParallel = function(x, geneLength, crossRate, popSize){
   foreach(i=seq(1, popSize, by = 2), .combine = rbind) %dopar% {
     crossedPair <- crossover(x[i,], x[i+1,], geneLength, crossRate)
     return(crossedPair)
@@ -15,11 +15,11 @@ crossedParallel = function(x, geneLength, crossRate){
 ## tests
 v1=(rep(0,5)); v2=(rep(1,5))
 x2 = rbind(v1,v2,v1,v2,v1,v2)
-crossedParallel(x, geneLength, crossRate)
+crossedParallel(x2, geneLength = dim(x2)[2], crossRate = 1, popSize = dim(x2)[1])
 
 
-mutationParallel = function(x, mRate){
-  foreach(i=seq(1, popSize, by = 2), .combine = rbind) %dopar% {
+mutationParallel = function(x, mRate, popSize){
+  foreach(i=seq(1, popSize, by = 2), .combine = rbind, .inorder= FALSE) %dopar% {
     mutatedPair <- mutation(x[i,], x[i+1,], mRate)
     return(mutatedPair)
   } 
@@ -28,8 +28,8 @@ mutationParallel = function(x, mRate){
 ## TESTS
 v1 = rep(c(1,0), 3); v2 = rep(1, 6)
 x2 = rbind(v1,v2,v1,v2,v1,v2)
-check2 = mutationParallel(x2, mRate=1); check2 # mutates every time
-check2 = mutationParallel(x2, mRate=0); check2 # never mutates
+check2 = mutationParallel(x2, mRate=1, popSize = dim(x2)[1]); check2 # mutates every time
+check2 = mutationParallel(x2, mRate=0, popSize = dim(x2)[1]); check2 # never mutates
 
 ########## ALGORITHM ###############
 

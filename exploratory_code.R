@@ -50,7 +50,7 @@ test1
 # 1. Post-crossover v1 and v2 in matrix of size 2 by popSize
 # We do not want to any individual with all zeros hence we guarantee that at least one element is 1.
 
-crossover <- function(v1, v2, geneLength, crossRate=1){
+crossover <- function(v1, v2, geneLength, crossRate = 1){
   crossBool = sample(c(TRUE, FALSE), 1, prob = c(crossRate, 1-crossRate))
   
   if(crossBool){
@@ -69,7 +69,7 @@ crossover <- function(v1, v2, geneLength, crossRate=1){
 v1=(rep(0,5))
 v2=(rep(1,5))
 check = crossover(v1, v2, geneLength = length(v1)); check
-check = crossover(v1, v2, geneLength = length(v1), crossRate = 0.5)
+check = crossover(v1, v2, geneLength = length(v1), crossRate = 0.5); check
 ############################################
 ######### 3rd FUNCTION: MUTATIONS ##########
 ############################################
@@ -141,7 +141,7 @@ for(i in 1:3){
   
   xCrossed = matrix(NA, nrow = popSize, ncol = geneLength)
   for(i in seq(1, popSize, by = 2))
-    xCrossed[i:(i+1),] <- crossover(xSamp[i,], xSamp[i+1,], popSize, geneLength, crossRate)
+    xCrossed[i:(i+1),] <- crossover(xSamp[i,], xSamp[i+1,], geneLength, crossRate)
   
   xMut = matrix(NA, nrow = popSize, ncol = geneLength)
   for(i in seq(1, popSize, by = 2))
