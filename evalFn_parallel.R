@@ -4,7 +4,7 @@ library(foreach)
 library(iterators)
 nCores <- 4  
 registerDoParallel(nCores) 
-
+# to add
 ##### Evaluation Function #####
 ##### Descritption ######
 ### Here we create two evaluation functions - evalLm and evalGlm
