@@ -40,7 +40,7 @@ evalLm <- function(genePool, X, y, criterion = "AIC",criFun = NA){
 #   DT[, AICRank := rank(AIC, ties.method = "first")]
 #   return(t(DT))
   
-  obj <- rbind(result, rank(result), rank(result)/sum(1:popSize))
+  obj <- rbind(result, rank(-result), rank(-result)/sum(1:popSize))
   row.names(obj) <- c(criterion, "ranks", "samplingProbs")
   return(obj)
 }
@@ -76,7 +76,7 @@ evalGlm <- function(genePool, X, y,family = "gaussian", criterion = "AIC", criFu
   #   DT[, AICRank := rank(AIC, ties.method = "first")]
   #   return(t(DT))
   
-  obj <- rbind(result, rank(result), rank(result)/sum(1:popSize))
+  obj <- rbind(result, rank(-result), rank(-result)/sum(1:popSize))
   row.names(obj) <- c(criterion, "ranks", "samplingProbs")
   return(obj)
 }
