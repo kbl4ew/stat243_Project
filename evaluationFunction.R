@@ -40,7 +40,7 @@ evalLm <- function(genePool, X, y, criterion = "AIC",criFun = NA){
 #   DT[, AICRank := rank(AIC, ties.method = "first")]
 #   return(t(DT))
   
-  obj <- rbind(result, rank(result), rank(result)/sum(1:popSize))
+  obj <- rbind(result, rank(-result), rank(-result)/sum(1:popSize))
   row.names(obj) <- c(criterion, "ranks", "samplingProbs")
   return(obj)
 }
@@ -76,19 +76,19 @@ evalGlm <- function(genePool, X, y,family = "gaussian", criterion = "AIC", criFu
   #   DT[, AICRank := rank(AIC, ties.method = "first")]
   #   return(t(DT))
   
-  obj <- rbind(result, rank(result), rank(result)/sum(1:popSize))
+  obj <- rbind(result, rank(-result), rank(-result)/sum(1:popSize))
   row.names(obj) <- c(criterion, "ranks", "samplingProbs")
   return(obj)
 }
 
-evalFunction <- function(currentGenePool, type, criterion, family = NA, criFun = NULL){
+evalFunction <- function(Pool, type, criterion, family = NA, criFun = NULL){
   if(type == "lm"){
     #print('lm flow')
-    return(evalLm(currentGenePool, X, y, criterion = "AIC",criFun))
+    return(evalLm(Pool, X, y, criterion = "AIC",criFun))
   }
   else if (type == "glm"){
     #print('glm flow')
-    return(evalGlm(currentGenePool, X, y, family, criterion, criFun))
+    return(evalGlm(Pool, X, y, family, criterion, criFun))
   }
   ### TO be fixed here
   else{
