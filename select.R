@@ -13,10 +13,9 @@
 X <- mtcars[,2:11]
 y <- mtcars[,1]
 
-select_fin <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = "lm", 
+select_test2 <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = "lm", 
                    family = NA, criFun = NULL, max_iterations = 500, min_iterations = 50, 
                    crossRate = 1, mRate = NA, zeroToOneRatio = 2){
-  
   
   ##### Defense coding #####
   X <- as.matrix(X)
@@ -46,8 +45,8 @@ select_fin <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", typ
   
   ### Calculating the sampling probabilities for the first generations of individuals/models
   #samplingProb <- evalFunction(currenGenePool, type, criterion, family, criFun)[3,]
-  samplingProb <- evalFunction2(currentGenePool, type, criterion, family)[3,]
-  
+  samplingProb <- evalFunction2(currentGenePool, popSize, type, family, criterion, criFun)[3,]
+    
   ### While loop to handle convergence/ exceedance of min iteration/ capped by max iteration
   #iter = 0;
   ### Condition to be satisfied 
@@ -60,29 +59,18 @@ select_fin <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", typ
     mutatedSample <- mutationParallel(crossedSample, mRate, popSize)
     
     currentGenePool <- mutatedSample
-    samplingProb <- evalFunction2(currentGenePool, type, criterion, family, criFun)[3,]
+    samplingProb <- evalFunction2(currentGenePool, popSize, type, family, criterion, criFun)[3,]    
+    
   }
   
   ##### After a fixed number of iterations, we return the best model #####
   return(currentGenePool)
-  
-  ##### Print the best model #####
-  
+  ##### Print the best model ##### 
 }
 
 #best <- function(currentGenePool, criterion, )
 
-
-
-
 ### test code
-system.time({result <- select_fin(X, y, popSize = 200, max_iterations = 100, crossRate = 0.95, mRate = 0.001)
-result})
-
-select(X, y, 200, "AIC", "lm", popSize = 20, max_iterations = 10, crossRate = .9, mRate = .1)
-
-
-# non-parallelized code from select_draft.R
-system.time({result <- select(X, y, popSize = 200, max_iterations = 100, crossRate = 0.95, mRate = 0.001)
+system.time({result_test <- select_test2(X, y, popSize = 50, max_iterations = 30, type = "lm", 
+                                         crossRate = 0.95, mRate = 0.001)
              result})
-
