@@ -1,0 +1,59 @@
+\documentclass{article}
+\usepackage{graphicx}
+\graphicspath{}
+%% for inline R code: if the inline code is not correctly parsed, you will see a message
+\newcommand{\rinline}[1]{SOMETHING WRONG WITH knitr}
+%% begin.rcode setup, include=FALSE
+% opts_chunk$set(fig.path='figure/latex-', cache.path='cache/latex-')
+%% end.rcode
+\begin{document}
+\title{Stat 243 Class Project: Building a Genetic Algorithm Based Variable Selection Algorithm}
+\author{Joy Hou, Kevin Li, Greta Olesen}
+\maketitle
+
+\noindent Introduction \\
+
+\noindent Genetic Algorithms are search heursitics that mimic the process of Darwinian natural selection. As Givens and Hoeting(2005) stated, candidate solutions to a maximization/minimization problem are considered as biological organisms represented by the genetic code which specifies the model attributes. Genetic algorithms are especially useful in large scale combinatorial and nonlinear optimization when traditional optimization techniques become untractable. Rather than exhaustively searching for the global optimal solution, the Genetic Algorithm utilizes heuristic-based search methods returns a solution close to the global optimal solution. \newline
+
+\noindent Variable selecton problems, when presented with a large set of potential predictors, become increasingly computationally expensive. As a result, practitioners and academics have turned to search heuristics such as the Genetic Algorithm. \newline
+
+\noindent The basic genetic algorithm is as follows:
+\begin{enumerate}
+  \item Initialize the first generation of models by generating a random population of n chromosomes
+  \item Evaluate the fitness/performance f(m) of each chromosome/model m in the first generation
+  \item Create a new population by repeating the following steps until the termination condition is met:
+  \begin{enumerate}
+    \item Select n/2 pairs of parents chromosomes/models from the previous generation according to the fitness (fitter chromosomes have a greater chance to be selected)
+    \item Crossover is carried out with a crossover probability. If crossover was performed, the 2 parent chromosomes are crossed over to produce 2 children. If no crossover was performed, 2 copies of the original chromosomes/models will be kept.
+    \item Mutation is carried out with a mutation probability. When mutation is carried out, the new offspring is mutated at each locus.
+    \item Accept the children/offsprings as the next population
+  \end{enumerate}
+  \item If the terminal condition is satisfied, stop, and return the best solution in the current population. Otherwise, return to step 2
+\end{enumerate}
+
+\noindent The genetic algorithm by no means returns the optimal solution, but users can generally expect an acceptable solution with rapid convergence that often resembles that presented figure below: \newline
+
+\includegraphics[scale=0.35]{Decline_in_avgAIC.png}
+
+\noindent Code Structure \newline
+
+\noindent Testing \newline
+
+\noindent Contributions \newline
+
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -2,7 +2,7 @@
 \alias{select}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-The variable selection algorithm
+select: The variable selection algorithm
 }
 
 \description{
