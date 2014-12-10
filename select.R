@@ -46,10 +46,10 @@
 # The code is an adoption of the basic generic algorith implementation in the genalg package in R
 
 ##### Implementation #####
-popInitialize <- function(popSize = 0, geneLength = 0, zeroToOneRatio){
+popInitialize <- function(popSize = 50, geneLength = 0, zeroToOneRatio = 1){
   
-  if(is.na(zeroToOneRatio)){
-    zeroToOneRation = 0;    
+  if(geneLength == 0){
+    stop("geneLength cannot be zero.")
   }
 
   pop <- matrix(nrow = popSize, ncol = geneLength);
@@ -67,12 +67,12 @@ popInitialize <- function(popSize = 0, geneLength = 0, zeroToOneRatio){
 }
 
 ##### Auxilary Function 2: EvalFunction #####
-library(parallel) 
-library(doParallel)
-library(foreach)
-library(iterators)
-nCores <- 4  
-registerDoParallel(nCores) 
+#library(parallel) 
+#library(doParallel)
+#library(foreach)
+#library(iterators)
+#nCores <- 4  
+#registerDoParallel(nCores) 
 # to addd
 ##### Evaluation Function #####
 ##### Descritption ######
@@ -96,9 +96,9 @@ registerDoParallel(nCores)
 
 singleEval <- function(singleGene, X, y, type, criterion, criFun, family){
   if(type == "lm")
-    fit <- lm(y~as.matrix(X[,which(singleGene != 0)]))
+    fit <- lm(y~X[,which(singleGene != 0)])
   if(type == "glm")
-    fit <- glm(as.vector(y)~as.matrix(X[,which(singleGene != 0)]), family)
+    fit <- glm(as.vector(y)~X[,which(singleGene != 0)], family)
   
   if(is.null(criFun)){    # Dont have their own criterion function written
     criFunBuilt <- eval(parse(text = criterion))
@@ -165,7 +165,7 @@ updateSamp <- function(x, popSize, weights){
 }
 
 ##### Auxilary Function: Crossover #####
-crossover <- function(v1, v2, geneLength, crossRate = 1){
+crossover <- function(v1, v2, geneLength, crossRate){
   crossBool = sample(c(TRUE, FALSE), 1, prob = c(crossRate, 1-crossRate))
   
   if(crossBool){
@@ -212,14 +212,10 @@ mutation <- function(v1, v2, mRate){
 #X <- mtcars[,2:11]
 #y <- mtcars[,1]
 
-select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = "lm", family = "gaussian", criFun = NULL, max_iterations = 500, min_iterations = 50, crossRate = NA, mRate = NA, zeroToOneRatio = 2){
+select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = "lm", family = "gaussian", criFun = NULL, max_iterations = 500, min_iterations = 50, crossRate = 0.95, mRate = 0.001, zeroToOneRatio = 1){
   ##### Defense coding #####
-  X <- as.matrix(X);
-  y <- as.vector(y);
-  if(is.na(mRate)){
-    mRate = 1/(dim(X)[1]);
-  }
-  
+  #X <- as.matrix(X);
+  #y <- as.vector(y);
   if((popSize%%2)!=0){
     #warning("The number of models has ")
     #print("Warning: The number of models has been incremented to the nearest even number")
@@ -232,12 +228,18 @@ select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = 
     stop("Please provide the predictors! Exiting from the function")
   }
   
-#   if(is.null(y)){
-#     stop("Please provide the independent variable/outcome! Exiting from the function")
-#  }
-  
-  
-  
+   if(is.null(y)){
+     stop("Please provide the independent variable/outcome! Exiting from the function")
+  }
+  library(parallel)
+  library(doParallel)
+  library(foreach)
+  library(iterators)
+  nCores <- 4  
+#   checkLoaded <- try(registerDoParallel(nCores), silent = TRUE)
+#   if(as.character(attributes(checkLoaded)[1] == "try-error")){
+#     stop(cat("Please load the following packages before running select:\n1) parallel\n2) doParallel\n3) foreach\n4) iterators")) 
+#   }
   ##### Beginning of the generic algorithm #####
   geneLength <- dim(X)[2];
   ##### Initializing the first generation of individuals/ models
@@ -287,7 +289,7 @@ select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = 
   #return(currentGenePool)
   final <- best(X, y, currentGenePool, popSize, type, criterion)
   #print(avgAIC)
-  plot(avgCriterion)
+  plot(avgCriterion, main='Average Criterion Values vs Iteration Number', xlab = "Iteration", ylab ="Average Criterion Value")
   ##### Print the best model #####
   return(final)
 }
@@ -304,24 +306,24 @@ best <- function(X, y, pool, popSize, type, criterion, family = "gaussian", criF
     #print(index)
     index2 <- which(pool[index,] != 0, arr.ind = T)
     #print(index2)
-    final <- lm(y~as.matrix(X[,index2]))
+    final <- lm(y~X[,index2])
     #print('success')
   }
   else if (type == "glm"){
     #print('glm flow')
     index <- which(tmp[2,] == min(tmp[2,]), arr.ind = T)
     index2 <- which(pool[index,] != 0, arr.ind = T)[1]
-    final <- glm(as.vector(y)~as.matrix(X[,index2]),family)
+    final <- glm(as.vector(y)~X[,index2],family)
     
   }
   ### TO be fixed here
   else{
     final <- 0
   }
-  print(summary(final))
+  #print(summary(final))
   criFunBuilt <- eval(parse(text = criterion))
   criValue <- criFunBuilt(final)
-  print(paste("The resulting criterion is: ", criterion, criValue))
+  #print(paste("The resulting criterion is: ", criterion, criValue))
   return(final)
 }
 
