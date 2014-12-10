@@ -25,7 +25,7 @@ registerDoParallel(nCores)
 ### Second row of result rank
 #library(data.table)
 
-singleEval <- function(singleGene, X, y, type, criterion, criFun){
+singleEval <- function(singleGene, X, y, type, criterion, criFun, family){
   if(type == "lm")
     fit <- lm(y~as.matrix(X[,which(singleGene != 0)]))
   if(type == "glm")
@@ -55,7 +55,7 @@ evalFunction2 <- function(currentGenePool, popSize, type = "lm", family = "gauss
   result <- rep(NA, popSize)
    
   result <- foreach(i = 1:popSize, .combine = c)  %dopar% {
-    criValue <- singleEval(currentGenePool[i,], X, y, type, criterion, criFun)
+    criValue <- singleEval(currentGenePool[i,], X, y, type, criterion, criFun, family)
     return(criValue)
   }
 
@@ -64,5 +64,5 @@ evalFunction2 <- function(currentGenePool, popSize, type = "lm", family = "gauss
   return(obj)
 }
 
-evalFunction2(genePool, popSize = 4, type = "lm", criterion = "AIC", criFun = NULL)
+#evalFunction2(genePool, popSize = 4, type = "lm", criterion = "AIC", criFun = NULL)
 

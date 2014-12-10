@@ -10,8 +10,8 @@
 
 ##### Output: #####
 ### result <- the best model based on the evaluation criterion
-#X <- mtcars[,2:11]
-#y <- mtcars[,1]
+X <- mtcars[,2:11]
+y <- mtcars[,1]
 
 
 
@@ -51,9 +51,7 @@ popInitialize <- function(popSize = 0, geneLength = 0, zeroToOneRatio){
   if(is.na(zeroToOneRatio)){
     zeroToOneRation = 0;    
   }
-  else{
-    #
-  }
+
   pop <- matrix(nrow = popSize, ncol = geneLength);
   
   ##### Randomly initialize the first generation #####
@@ -106,8 +104,17 @@ singleEval <- function(singleGene, X, y, type, criterion, criFun, family){
     criFunBuilt <- eval(parse(text = criterion))
     criValue <- criFunBuilt(fit)
   }
-  else 
-    criValue = criFun(fit)   # use the function inputted by the user; CHECK FOR ERRORS?
+  else {
+    criValue = try(criFun(fit), silent = TRUE)   # use the function inputted by the user; CHECK FOR ERRORS?
+    if(!is.null(attributes(criValue)$class))
+      if(attributes(criValue)$class == "try-error")
+        stop(cat(paste("criFun is not compatible. The following error occured:\n", geterrmessage())))
+    if(length(criValue)!=1)
+      stop("Dimension of output for criFun greater than 1.")
+    if(!is.numeric(criValue)!=1)
+      stop("Output for criFun is not numeric.")
+    return(criValue)
+  }
   return(criValue)
 }
 
@@ -126,6 +133,9 @@ evalFunction <- function(currentGenePool, popSize, type = "lm", family = "gaussi
   
   if(type != "lm" & type != "glm")
     stop("Regression must be of type 'lm' or 'glm'")
+  
+  if(family == "binomial" & length(unique(na.omit(y)))!= 2)
+    stop("Logistic regression requires 'y' to be binary")
   
   geneLength <- dim(currentGenePool)[2]
   result <- rep(NA, popSize)
@@ -198,10 +208,10 @@ mutation <- function(v1, v2, mRate){
 
 
 ##### Clear out later #####
-X <- mtcars[,2:11]
-y <- mtcars[,1]
+#X <- mtcars[,2:11]
+#y <- mtcars[,1]
 
-select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = "lm", family = NA, criFun = NULL, max_iterations = 500, min_iterations = 50, crossRate = NA, mRate = NA, zeroToOneRatio = 2){
+select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = "lm", family = "gaussian", criFun = NULL, max_iterations = 500, min_iterations = 50, crossRate = NA, mRate = NA, zeroToOneRatio = 2){
   ##### Defense coding #####
   X <- as.matrix(X);
   y <- as.vector(y);
@@ -211,7 +221,7 @@ select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = 
   
   if((popSize%%2)!=0){
     #warning("The number of models has ")
-    print("Warning: The number of models has been incremented to the nearest even number")
+    #print("Warning: The number of models has been incremented to the nearest even number")
     warning("The number of models has been incremented to the nearest even number")
     popSize <- popSize + 1
   }
@@ -284,7 +294,7 @@ select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = 
   return(final)
 }
 
-best <- function(pool, popSize, type, criterion, family = NA, criFun = NULL){
+best <- function(pool, popSize, type, criterion, family = "gaussian", criFun = NULL){
   #print('In best')
   
   tmp <- evalFunction(pool, popSize, type, family, criterion, criFun)
@@ -310,8 +320,10 @@ best <- function(pool, popSize, type, criterion, family = NA, criFun = NULL){
   else{
     final <- 0
   }
-  print(final)
-  print(paste("The resulting criterion is: ", criterion, AIC(final)))
+  print(summary(final))
+  criFunBuilt <- eval(parse(text = criterion))
+  criValue <- criFunBuilt(final)
+  print(paste("The resulting criterion is: ", criterion, criValue))
   return(final)
 }
 
@@ -319,6 +331,6 @@ best <- function(pool, popSize, type, criterion, family = NA, criFun = NULL){
 
 
 ### test code
-result <- select(X, y, popSize = 19, max_iterations = 50, crossRate = 0.95, mRate = 0.0001)
+#result <- select(X, y, popSize = 19, max_iterations = 50, crossRate = 0.95, mRate = 0.0001)
 
 

@@ -90,7 +90,7 @@ system.time({result <- select_test(X, y, popSize = 200, max_iterations = 100, cr
              result})
 
 # select is in the 
-system.time({result <- select(X, y, popSize = 200, max_iterations = 100, crossRate = 0.95, mRate = 0.001)
+system.time({result2 <- select(X, y, popSize = 200, max_iterations = 100, crossRate = 0.95, mRate = 0.001)
              result})
 result <- select(X, y, popSize = 20, max_iterations = 50, crossRate = 0.95, mRate = 0.001)
 
@@ -100,7 +100,7 @@ result <- select(X, y, popSize = 20, max_iterations = 50, crossRate = 0.95, mRat
 
 
 
-### test code
+### test coded
 result <- select(X, y, popSize = 20, max_iterations = 50, crossRate = 0.95, mRate = 0.001)
 
 
