@@ -36,12 +36,20 @@ singleEval <- function(singleGene, X, y, type, criterion, criFun){
     criValue <- criFunBuilt(fit)
   }
   else 
-    criValue = criFun(fit)   # use the function inputted by the user; CHECK FOR ERRORS?
+    criValue = try(criFun(fit), silent = TRUE)   # use the function inputted by the user; CHECK FOR ERRORS?
+    if(!is.null(attributes(criValue)$class))
+      if(attributes(criValue)$class == "try-error")
+        stop(cat(paste("criFun is not compatible. The following error occured:\n", geterrmessage())))
+    if(length(criValue)!=1)
+      stop("Dimension of output for criFun greater than 1.")
+    if(!is.numeric(criValue)!=1)
+      stop("Output for criFun is not numeric.")
   return(criValue)
 }
   
   
-evalFunction2 <- function(currentGenePool, popSize, type = "lm", family = "gaussian", criterion = "AIC", criFun = NULL){
+evalFunction2 <- function(currentGenePool, popSize, type = "lm", family = "gaussian", 
+                          criterion = "AIC", criFun = NULL){
   if(criterion!="AIC" & criterion!= "BIC")  ### ADD MORE?
     stop(paste(criterion, "is not a valid criterion. Please use AIC or BIC."))
   
@@ -50,6 +58,9 @@ evalFunction2 <- function(currentGenePool, popSize, type = "lm", family = "gauss
   
   if(type != "lm" & type != "glm")
     stop("Regression must be of type 'lm' or 'glm'")
+  
+  if(family == "binomial" & length(unique(na.omit(y)))!= 2)
+    stop("Logistic regression requires 'y' to be binary")
   
   geneLength <- dim(currentGenePool)[2]
   result <- rep(NA, popSize)
