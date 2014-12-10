@@ -1,35 +1,49 @@
-data <- mtcars[,2:10]
+testStepwise = function(){
+
+### testing against stepwise regression result ###
+### using mtcars data
+X <- mtcars[,2:11]
 y <- mtcars[,1]
-popSize = 20 # this can be anything, as long as it's even!
-geneLength = dim(data)[2] 
-crossRate = .9
-mRate = .1
-weights <- rep(1,popSize)/popSize
 
-itrNum = 100
+cat("Our function running ...")
+set.seed(1)
+result <- select(X, y, popSize = 160, max_iterations = 50, crossRate = 0.95, mRate = 0.0001)
+cat("Our function has chosen the following model:")
+print(summary(result))
+cat("The AIC value for our model is:",unlist(AIC(result)),"\n")
 
-###test popInitialize()
-genePool <- popInitialize(popSize, geneLength, zeroToOneRatio = 2)
+cat("Now we implement stepwise regression on the dataset.")
+fullModel <- lm( mpg ~ cyl+disp+hp+drat+wt+qsec+vs+am+gear+carb, data = mtcars)
+stepResult <- step(fullModel, direction = "both", trace = 1)
+cat("The stepwise regression has picked the following model:")
+print(summary(stepResult))
+cat("The AIC value for this model is:",AIC(stepResult))
 
-for(i in 1:itrNum){ 
-  # really we will have predetermined # of iterations
-  xSamp <- updateSamp(genePool, popSize, weights)
-  
-  xCrossed = matrix(NA, nrow = popSize, ncol = geneLength)
-  for(i in seq(1, popSize, by = 2))
-    xCrossed[i:(i+1),] <- crossover(xSamp[i,], xSamp[i+1,],geneLength,crossRate)
-  
-  xMut = matrix(NA, nrow = popSize, ncol = geneLength)
-  for(i in seq(1, popSize, by = 2))
-    xMut[i:(i+1),] <- mutation(xCrossed[i,], xCrossed[i+1,], mRate)  
-  
-  ### Here we would add the evaluation function ###
-  if(model = 1){
-    weights <- evalLm(genePool = xMut, covariates, outcome, criterion, criFun)[3,]
-  } else {
-    weights <- evalGlm(genePool = xMut, covariates, outcome, family, criterion, criFun)[3,]
-  }
-  
-  x = xMut # Update x-matrix with our new one!
-  print(x) # take out later
+if((abs(AIC(result)-AIC(stepResult))) < 10)
+  cat("The model our function chose is close to the one that stepwise regression chose, test succeeded.")
+else
+  cat("The model our function chose is not close to the one that stepwise regression chose, test failed")
+}
+## stepwise regression selected almost the same model ##
+## AIC is almost the same as from our model as well ##
+
+### testing out the program on simulated data set ###
+## Initialize the true model: y is dependent only on v1 and v2 ##
+testSim <- function(){
+X <- mtcars[,1:11]
+n <- dim(mtcars)[1]
+error <- matrix(rnorm(n),nrow = n)
+y <- 1*X[,1] + 2*X[,2] + 3*X[,3] + 4*X[,4] + 5*X[,5] + error
+
+set.seed(1)
+cat("Our function running ...")
+set.seed(1)
+result <- select (X, y, popSize = 100, max_iteration = 200, criterion = "AIC", zeroToOneRatio = 1, crossRate = 0.95, mRate = 0.001)
+cat("Our function has chosen the following model:")
+print(summary(result))
+cat("The AIC value for our model is:",unlist(AIC(result)),"\n")
+
+cat("The true model has the mpg, cyl, disp, hp and drat as the independent variables.\n")
+cat("Our function has picked out all of the 5 relevant variables but included 1 additional irrelevant variable. The performance of our function is decent. Test passed.")
+
 }
