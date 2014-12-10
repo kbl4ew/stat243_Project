@@ -125,6 +125,7 @@ best <- function(pool, type, criterion, family = NA, criFun = NULL){
 ### test code
 result <- select(X, y, popSize = 160, max_iterations = 50, crossRate = 0.95, mRate = 0.0001)
 
+system.time(result <- select(X, y, popSize = 160, max_iterations = 50, crossRate = 0.95, mRate = 0.0001))
 
 
 

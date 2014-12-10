@@ -19,19 +19,17 @@ popInitialize <- function(popSize = 0, geneLength = 0, zeroToOneRatio){
     zeroToOneRation = 0;    
   }
   else{
-    #print('zeroToOneRatio accepted')
+    #
   }
   pop <- matrix(nrow = popSize, ncol = geneLength);
 
   ##### Randomly initialize the first generation #####
   for (child in 1:popSize){
     pop[child, ] = sample(c(rep(0, zeroToOneRatio), 1), geneLength, replace = TRUE);
-    #print(child)
-    #print(pop[child, ])
+
     while(sum(pop[child,]) == 0){
       pop[child, ] = sample(c(rep(0, zeroToOneRatio), 1), geneLength, replace = TRUE);   
-      #print('in the loop')
-      #print(pop[child, ])
+
     }
   }
   return(pop)

@@ -102,19 +102,7 @@ mutation <- function(v1, v2, mRate){
     if(sum(v1Copy) == 0) v1Copy <- v1
     if(sum(v2Copy)== 0) v2Copy <- v2
     
-    return(rbind(v1Copy,v2Copy))
-    
-    # old version
-#    v1Loci = mLoci[mBool1] # mutation locations
-#    v2Loci = mLoci[mBool2] # mutation locations 
-#     v1Values = v1[v1Loci]   # value at the mutation locations
-#     v1[v1Loci][v1Values == 1] <- 0
-#     v1[v1Loci][v1Values == 0] <- 1
-#     ## Change v2
-#     v2Values = v2[v2Loci]   # value at the mutation locations
-#     v2[v2Loci][v2Values == 1] <- 0
-#     v2[v2Loci][v2Values == 0] <- 1
-    
+    return(rbind(v1Copy,v2Copy))    
   }
 }
 
@@ -157,3 +145,4 @@ for(i in 1:3){
 
 ### Notes: The way I envision making the code faster is to use parallel processing 
 #   in the 2 individual for-loops that implement 'crossover' and 'mutations'
+
