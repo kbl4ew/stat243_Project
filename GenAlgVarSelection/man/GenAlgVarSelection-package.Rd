@@ -16,6 +16,7 @@ Version: \tab 1.0\cr
 Date: \tab 2014-12-09\cr
 Depends: \tab parallel, doParallel, foreach, iterators \cr
 }
+}
 The GenAlgVarSelection Package provides a variable selection algorithm for Linear Models and Generalized Linear Models. The main function of the package is select().
 
 \author{
