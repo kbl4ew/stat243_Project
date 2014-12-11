@@ -157,9 +157,15 @@ testCrossOver()
 testStepwise()
 %% end.rcode
 
-\noindentAnother test of the overall function is done through a simulated dataset. We generated an outcome variable based on the first 5 variables in the "mtcars" data set. Then we used the 5 variables together with 6 other "noise" variables as the variable pools for our function to select from. The results are shown below:
+\noindent Another test of the overall function is done through a simulated dataset. We generated an outcome variable based on the first 5 variables in the "mtcars" data set. Then we used the 5 variables together with 6 other "noise" variables as the variable pools for our function to select from. The results are shown below:
 %% begin.rcode
-testSim()
+testSim1()
+%% end.rcode
+
+\noindent Finally, we further added 30 "noise" variables to the variable pool. So we now have 5 predictor variables and 36 "noise" variables in the variable pool. \\
+\noindent We tested our function on this dataset. 
+%% begin.rcode eval=FALSE
+testSim2()
 %% end.rcode
 
 \section{Contributions}

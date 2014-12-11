@@ -155,7 +155,7 @@ evalFunction <- function(X, y, currentGenePool, popSize, type = "lm", family = "
 updateSamp <- function(x, popSize, weights){
   pairs = matrix(NA, ncol = popSize/2, nrow = 2) # form sampled pairs
   
-  set.seed(0) # take out later
+  #set.seed(0) # take out later
   for(i in 1:popSize/2){
     pairs[,i] = sample(1:popSize, 2, prob = weights)
   }
@@ -254,6 +254,10 @@ select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = 
   ### if iter < min_iteration
   #while((iter <= min_iterations)&& !(iter >= max_iterations))
   for(i in 1:max_iterations){
+    ##### If Average Criterion Value has converged, break #####
+    if((i > min_iterations) && ((abs(avgCriterion[i-1]-avgCriterion[i-10]))<1)){
+      break
+    }
     # really we will have predetermined # of iterations
     #xSamp <- updateSamp(x, popSize, weights)
     geneSample <- updateSamp(currentGenePool, popSize, samplingProb);
