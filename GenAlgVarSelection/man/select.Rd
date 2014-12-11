@@ -35,7 +35,8 @@ select(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = "lm",
   A probability distribution from the exponential family to specialize the glm
 }
   \item{criFun}{
-  A function to evaluate the criterion when a built-in evaluation function is absent in R
+  A function to evaluate the criterion when a built-in evaluation function is absent in R \cr
+  The criFun is then passed to evalFunction to minimize via the Genetic Algorithm
 }
   \item{max_iterations}{
   Maximum of iterations the Generic Algorithm carries out before stopping 
@@ -73,6 +74,10 @@ Step 3: Create a new population by repeating the following steps until the termi
 3d. Accept the children/offsprings as the next population
 
 Step 4: If the terminal condition is satisfied, stop, and return the best solution in the current population. Otherwise, return to Step 2
+
+Note: \cr
+In order to avoid unnecessary computational cost, the authors have implemented a convergence check:
+Once the average criterion value is no different that that of 10 iterations ago, the algorithm breaks.
 }
 \value{
 Select() returns the best model (as evaluated by the user-defined criterion) after the algorithms reaches the terminal condition: i.e. if the uses inputs "lm" as the type, an "lm" object is returned; if the user inputs "glm" as the type, a "glm" object is returned.

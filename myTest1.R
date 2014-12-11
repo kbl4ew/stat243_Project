@@ -31,9 +31,9 @@ testInitial <- function(){
   print(pop[1,])
   cat("The zero-to-one ratio in the model is approximately 1 to 1 as specified in default.\n")
 }
+testInitial()
 
 testSingleEval <- function(){
-  
   X <- mtcars[,2:11]
   y <- mtcars[,1]
   singleGene <- sample(c(0,1),dim(X)[2],replace=T)
@@ -53,8 +53,11 @@ testEval <- function(){
   print(criterion[,1])
   cat("\n")
 }
+testEval()
 
 testUpdate <- function(){
+  X <- mtcars[,2:11]
+  y <- mtcars[,1]
   weights <-rep(1,100)
   currentGenePool <- popInitialize(popSize = 100, geneLength = dim(X)[2],zeroToOneRatio = 1)
   newGenePool <- updateSamp(currentGenePool,popSize = 100, weights = weights)
@@ -62,8 +65,10 @@ testUpdate <- function(){
   cat("Here is what one model in the new generation looks like:\n")
   print(newGenePool[1,])
 }
+testUpdate()
 
 testCrossOver <- function(){
+  set.seed(1)
   v1 <- rep(1,10)
   v2 <- rep(0,10)
   geneLength <- length(v1)
@@ -74,8 +79,9 @@ testCrossOver <- function(){
   cat("The genes after crossover:\n")
   print(child)
   cat("\n")
-  
 }
+testCrossOver()
+
 
 testMutation <- function(){
   v1 <- sample(c(0,1),10,replace=T)
@@ -95,9 +101,10 @@ testMutation <- function(){
 testBest <- function(){
   X <- mtcars[,2:11]
   y <- mtcars[,1]
-  currentPool <- popInitialize(popSize = 100, geneLength = dim(mtcars)[2],zeroToOneRatio = 1)
-  best(X = X, y = y, pool = currentPool, popSize = 100, type = "lm", criterion = "AIC")
+  currentPool <- popInitialize(popSize = 100, geneLength = dim(X)[2], zeroToOneRatio = 1)
+  best(X, y, pool = currentPool, popSize = 100, type = "lm", criterion = "AIC")
 }
+
 
 testStepwise = function(){
   ##### Implement our function on the mtcars dataset ###### 
@@ -107,11 +114,11 @@ testStepwise = function(){
   
   cat("Testing select() function on mtcars dataset ... \n")
   cat("Our function running ...")
-  set.seed(1)
+  set.seed(2)
   result <- select(X, y, popSize = 100, max_iterations = 500, crossRate = 0.95, mRate = 0.0001)
   cat("Now we implement stepwise regression on the dataset.")
   fullModel <- lm( mpg ~ cyl+disp+hp+drat+wt+qsec+vs+am+gear+carb, data = mtcars)
-  stepResult <- step(fullModel, direction = "both", trace = 1)
+  stepResult <- step(fullModel, direction = "both", trace = FALSE)
   cat("The stepwise regression has picked the following model:")
   print(summary(stepResult))
   cat("The AIC value for this model is:",AIC(stepResult),"\n")
@@ -126,50 +133,50 @@ testStepwise = function(){
   else
     cat("The model our function chose is not close to the one that stepwise regression chose. Test failed.\n")
 }
-
-
+testStepwise()
 
 testSim1 <- function(){
-##### Simulate outcome variable based on 5 predicting variables #####
-##### Throw in 6 more "noise" variables and use our function to select the predictor variables #####
-X <- mtcars[,1:11]
-n <- dim(mtcars)[1]
-error <- matrix(rnorm(n),nrow = n)
-y <- 1*X[,1] + 2*X[,2] + 3*X[,3] + 4*X[,4] + 5*X[,5] + error
-
-cat("Testing our function on the simulated dataset ...\n")
-cat("Our function running ...\n")
-set.seed(1)
-result <- select (X, y, popSize = 200, max_iteration = 200, criterion = "AIC", zeroToOneRatio = 1, crossRate = 0.95, mRate = 0.001)
-cat("Our function has chosen the following model:")
-print(summary(result))
-cat("The AIC value for our model is:",unlist(AIC(result)),"\n")
-cat("The true model has the mpg, cyl, disp, hp and drat as the independent variables.\n")
-cat("Using the current seed, our function has picked out all of the 5 relevant variables but included 1 additional irrelevant variable. The performance of our function is decent. Test succeeded.")
-}
-
-testSim2 <- function(){
-##### Simulate outcome variable based on 5 predicting variables #####
-##### Throw in 36 more "noise" variables and use our function to select the predictor variables #####
-  X1 <- mtcars[,1:11]
+  ##### Simulate outcome variable based on 5 predicting variables #####
+  ##### Throw in 6 more "noise" variables and use our function to select the predictor variables #####
+  X <- mtcars[,1:11]
   n <- dim(mtcars)[1]
-  X2 <- matrix(sample(0:100,30*n,replace = T),nrow = n)
-  X <- cbind(X1,X2)
+  set.seed(1)
   error <- matrix(rnorm(n),nrow = n)
   y <- 1*X[,1] + 2*X[,2] + 3*X[,3] + 4*X[,4] + 5*X[,5] + error
   
   cat("Testing our function on the simulated dataset ...\n")
-  cat("Our function running ...\n")
+  cat("Function is running ...\n")
   set.seed(1)
-  result <- select (X, y, popSize = 300, max_iteration = 200, criterion = "AIC", zeroToOneRatio = 5, crossRate = 0.95, mRate = 0.001)
+  result <- select (X, y, popSize = 200, max_iteration = 200, criterion = "BIC", zeroToOneRatio = 1, crossRate = 0.95, mRate = 0.001)
   cat("Our function has chosen the following model:")
   print(summary(result))
-  cat("The AIC value for our model is:",unlist(AIC(result)),"\n")
+  cat("The BIC value for our model is:",unlist(BIC(result)),"\n")
+  cat("The true model has the mpg, cyl, disp, hp and drat as the independent variables.\n")
+  cat("Using the current seed, our function has picked out all of the 5 relevant variables\nbut included 1 additional irrelevant variable. The performance of our function is decent. Test succeeded.")
+}
+testSim1()
+
+testSim2 <- function(){
+  ##### Simulate outcome variable based on 5 predicting variables #####
+  ##### Throw in 36 more "noise" variables and use our function to select the predictor variables #####
+  set.seed(2)
+  X1 <- mtcars[,1:11]
+  n <- dim(mtcars)[1]
+  X2 <- as.data.frame(matrix(sample(0:100, 20*n,replace = T),nrow = n))
+  X <- cbind(X1,X2)
+  error <- rnorm(n)
+  y <- 1*X[,1] + 2*X[,2] + 3*X[,3] + 4*X[,4] + 5*X[,5] + error
+  
+  cat("Testing our function on the simulated dataset ...\n")
+  cat("Function is running ...\n")
+  set.seed(1)
+  result <- select (X, y, popSize = 200, max_iteration = 200, criterion = "BIC", zeroToOneRatio = 1, crossRate = 0.95, mRate = 0.001)
+  cat("Our function has chosen the following model:")
+  print(summary(result))
+  cat("The BIC value for our model is:",unlist(BIC(result)),"\n")
   cat("The true model has the mpg, cyl, disp, hp and drat as the independent variables.\n")
   cat("Using the current seed, our function has picked out all of the 5 relevant variables but included 1 additional irrelevant variable. The performance of our function is decent. Test succeeded.")
-  
-  
 }
-
+testSim2()
 
 

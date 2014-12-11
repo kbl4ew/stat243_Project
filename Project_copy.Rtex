@@ -37,14 +37,14 @@
 \noindent The genetic algorithm by no means returns the optimal solution, but users can generally expect an acceptable solution with rapid convergence that often resembles that presented figure below: \newline
 
 \begin{center}
-\includegraphics[scale=0.45]{Decline_in_avgAIC.png}
+%%\includegraphics[scale=0.45]{Average_Criterion_Value_VS_Iteration_Number.png}
 \end{center}
 
 \section{Code Structure}
 
 We utilized functions in R to carry out our Genetic Algorithm. We chose to make use of functions rather than OOP methods because the functions could be put to use in a clear, orderly manner. Consequentially, the algorithm is outlined as follows:
 
-%% begin.rcode, eval = FALSE, cache = TRUE
+%% begin.rcode code1, eval = FALSE, cache = TRUE
 result <- select(X, y, popSize, criterion, type, family, criFun, max_iterations, 
                 crossRate, mRate, zeroToOneRatio)
 %% end.rcode
@@ -67,7 +67,7 @@ The \textit{evalFunction} makes use of parallelization to evaluate each individu
 
 \noindent This is a function called \textit{singleEval} that is implemented inside \textit{evalFunction}. \textit{singleEval} evaluates a single model and returns the criterion value for that model. The criterion can be one of the built-in criterions: AIC or BIC. The user can also input their own function into the argument \textit{criFun} to evaluate the model. The user inputed \textit{criFun} is the function that should be minimized. If specified, the user's function should take in an lm object and return a single criterion value. The following is an example of a function that the user could pass as an argument for \textit{criFun}: \newline
 
-%% begin.rcode, eval = FALSE, cache = TRUE
+%% begin.rcode code2, eval = FALSE, cache = TRUE
 fun <- function(lm_ob){
     adj_r_squared <- summary(lm_ob)$adj.r.squared
     return(-adj_r_squared)
@@ -80,7 +80,7 @@ fun <- function(lm_ob){
 $$P{i} = \frac{-rank_{i}}{\sum\limits_{i=1}^n N}$$
 
 \begin{center}
-\noindent Where $N$ is the population size (or the number of individuals in the model).\newline
+\noindent Where $N$ is the population size (or the total number of individuals).\newline
 \end{center}
 
 \noindent The function returns a matrix that contains the fitness level of each individual/model, the rank for each model, and the sampling probability for each model. 
@@ -147,41 +147,233 @@ This is the main function that implements the genetic algorithm. The functions a
 
 
 \section{Testing}
-\noindent We have rigorously tested each auxiliary function and checked that they return the desired results. For example
-%% begin.rcode
+\subsection*{Auxilary Functions}
+\noindent We have rigorously tested each auxiliary function and checked that they return the desired results. The following shows the test functions for each auxilary function:
+
+%% begin.rcode c1, cache = TRUE
+testInitial <- function(){
+  pop <- popInitialize(popSize = 100, zeroToOneRatio = 1, geneLength = 10)
+  cat("1. The popInitialize() function returns an initial generation of models with 1\nindicating an included variable and 0 indicating an excluded variable.\n")
+  cat("Here is what one model inside the generation looks like :\n")
+  print(pop[1,])
+  cat("The zero-to-one ratio in the model is approximately 1 to 1 as specified in default.\n")
+}
+testInitial()
+%% end.rcode
+
+%% begin.rcode c2, cache = TRUE
+testSingleEval <- function(){
+  X <- mtcars[,2:11]
+  y <- mtcars[,1]
+  singleGene <- sample(c(0,1),dim(X)[2],replace=T)
+  criValue <- singleEval(singleGene,X,y,"lm","BIC",NULL,"gaussian")
+  cat("2. The singleEval() function returns the value of the evaluation criterion for one\nspecified model.\n")
+  cat("For example, the BIC here is:\n")
+  cat(criValue)
+  cat("\n")
+}
+testSingleEval()
+%% end.rcode
+
+%% begin.rcode c3, cache = TRUE
+
+testEval <- function(){
+  X <- mtcars[,2:11]
+  y <- mtcars[,1]
+  currentGenePool <- popInitialize(popSize = 100, geneLength = dim(X)[2],zeroToOneRatio = 1)
+  criterion <- evalFunction(X,y,currentGenePool = currentGenePool,popSize = 100)
+  cat("3. The evalFunction() returns the AIC rank and sampling probability of each of \nthe models in the generation, for example:\n")
+  print(criterion[,1])
+  cat("\n")
+}
+testEval()
+%% end.rcode
+
+
+%% begin.rcode c4, cache = TRUE
+testUpdate <- function(){
+  X <- mtcars[,2:11]
+  y <- mtcars[,1]
+  weights <-rep(1,100)
+  currentGenePool <- popInitialize(popSize = 100, geneLength = dim(X)[2],zeroToOneRatio = 1)
+  newGenePool <- updateSamp(currentGenePool,popSize = 100, weights = weights)
+  cat("4. The updateSamp function updates the population according to the specified weights.\n")
+  cat("Here is what one model in the new generation looks like:\n")
+  print(newGenePool[1,])
+}
+testUpdate()
+%% end.rcode
+
+
+
+%% begin.rcode c5, cache= TRUE
+testCrossOver <- function(){
+  set.seed(1)
+  v1 <- rep(1,10)
+  v2 <- rep(0,10)
+  geneLength <- length(v1)
+  child <- crossover(v1,v2,geneLength,1)
+  cat("5. The crossover() function returns two models generated by cross over:\n")
+  cat("The genes before crossover:\n")
+  print(rbind(v1,v2))
+  cat("The genes after crossover:\n")
+  print(child)
+  cat("\n")
+}
 testCrossOver()
 %% end.rcode
 
+%% begin.rcode c6, cache = TRUE
+
+testMutation <- function(){
+  v1 <- sample(c(0,1),10,replace=T)
+  v2 <- sample(c(1,0),10,replace=T)
+  geneLength <- length(v1)
+  child <- mutation(v1,v2,1)
+  
+  cat("6. The mutation() function returns two models generated from mutation:\n")
+  cat("The genes before mutation:\n")
+  print(rbind(v1,v2))
+  cat("The genes after mutation:\n")
+  print(child)
+  cat("\n") 
+}
+testMutation()  
+%% end.rcode
+
+%% begin.rcode c7, cache = TRUE
+
+testBest <- function(){
+  X <- mtcars[,2:11]
+  y <- mtcars[,1]
+  currentPool <- popInitialize(popSize = 100, geneLength = dim(X)[2], zeroToOneRatio = 1)
+  best(X, y, pool = currentPool, popSize = 100, type = "lm", criterion = "AIC")
+}
+testBest()
+%% end.rcode
+
+\subsection*{Main Function: select}
+
 \noindent To test the overall function, we first tested it against stepwise regression result. We did variable selection on the "mtcars" dataset using our function and stepwise regression. The results are shown below:
-%% begin.rcode
+
+%% begin.rcode codeD, cache = TRUE, out.width='.7\\linewidth',  out.height='10cm', fig.show='asis',fig.align='center'
+testStepwise = function(){
+  ##### Implement our function on the mtcars dataset ###### 
+  ##### Using stepwise regression on the same dataset and compare the results #####
+  X <- mtcars[,2:11]
+  y <- mtcars[,1]
+  
+  cat("Testing select() function on mtcars dataset ... \n")
+  cat("Our function running ...")
+  set.seed(2)
+  result <- select(X, y, popSize = 100, max_iterations = 500, crossRate = 0.95, mRate = 0.0001)
+  cat("Now we implement stepwise regression on the dataset.")
+  fullModel <- lm( mpg ~ cyl+disp+hp+drat+wt+qsec+vs+am+gear+carb, data = mtcars)
+  stepResult <- step(fullModel, direction = "both", trace = FALSE)
+  cat("The stepwise regression has picked the following model:")
+  print(summary(stepResult))
+  cat("The AIC value for this model is:",AIC(stepResult),"\n")
+  cat("\n")
+  cat("Our function has chosen the following model:")
+  print(summary(result))
+  cat("The AIC value for our model is:",unlist(AIC(result)),"\n")
+  cat("\n")
+  
+  if((abs(AIC(result)-AIC(stepResult))) < 10)
+    cat("The model our function chose is close to the one that stepwise regression chose. Test succeeded.\n")
+  else
+    cat("The model our function chose is not close to the one that stepwise regression chose. Test failed.\n")
+}
 testStepwise()
 %% end.rcode
 
+
 \noindent Another test of the overall function is done through a simulated dataset. We generated an outcome variable based on the first 5 variables in the "mtcars" data set. Then we used the 5 variables together with 6 other "noise" variables as the variable pools for our function to select from. The results are shown below:
-%% begin.rcode
+%% begin.rcode codeE, cache = TRUE, out.width='.7\\linewidth',  out.height='10cm', fig.show='asis',fig.align='center'
+testSim1 <- function(){
+  ##### Simulate outcome variable based on 5 predicting variables #####
+  ##### Throw in 6 more "noise" variables and use our function to select the predictor variables #####
+  X <- mtcars[,1:11]
+  n <- dim(mtcars)[1]
+  set.seed(1)
+  error <- matrix(rnorm(n),nrow = n)
+  y <- 1*X[,1] + 2*X[,2] + 3*X[,3] + 4*X[,4] + 5*X[,5] + error
+  
+  cat("Testing our function on the simulated dataset ...\n")
+  cat("Function is running ...\n")
+  set.seed(1)
+  result <- select (X, y, popSize = 200, max_iteration = 200, criterion = "BIC", zeroToOneRatio = 1, crossRate = 0.95, mRate = 0.001)
+  cat("Our function has chosen the following model:")
+  print(summary(result))
+  cat("The BIC value for our model is:",unlist(BIC(result)),"\n")
+  cat("The true model has the mpg, cyl, disp, hp and drat as the independent variables.\n")
+  cat("Using the current seed, our function has picked out all of the 5 relevant variables\nbut included 1 additional irrelevant variable. The performance of our function is decent.\nTest succeeded.")
+}
 testSim1()
 %% end.rcode
 
 \noindent Finally, we further added 30 "noise" variables to the variable pool. So we now have 5 predictor variables and 36 "noise" variables in the variable pool. \\
 \noindent We tested our function on this dataset. 
-%% begin.rcode eval=FALSE
+
+%% begin.rcode code7, cache = TRUE, out.width='.7\\linewidth',  out.height='10cm', fig.show='asis',fig.align='center'
+testSim2 <- function(){
+  ##### Simulate outcome variable based on 5 predicting variables #####
+  ##### Throw in 36 more "noise" variables and use our function to select the predictor variables #####
+  set.seed(2)
+  X1 <- mtcars[,1:11]
+  n <- dim(mtcars)[1]
+  X2 <- as.data.frame(matrix(sample(0:100, 20*n,replace = T),nrow = n))
+  X <- cbind(X1,X2)
+  error <- rnorm(n)
+  y <- 1*X[,1] + 2*X[,2] + 3*X[,3] + 4*X[,4] + 5*X[,5] + error
+  
+  cat("Testing our function on the simulated dataset ...\n")
+  cat("Function is running ...\n")
+  set.seed(1)
+  result <- select (X, y, popSize = 200, max_iteration = 200, criterion = "BIC", zeroToOneRatio = 1, crossRate = 0.95, mRate = 0.001)
+  cat("Our function has chosen the following model:")
+  print(summary(result))
+  cat("The BIC value for our model is:",unlist(BIC(result)),"\n")
+  cat("The true model has the mpg, cyl, disp, hp and drat as the independent variables.\n")
+  cat("Using the current seed, our function has picked out all of the 5 relevant\nvariables but included 1 additional irrelevant variable.\nThe performance of our function is decent. Test succeeded.")
+}
 testSim2()
+
+
 %% end.rcode
 
 \section{Contributions}
 
+\noindent Everyone in the group contributed relatively equally to each aspect of the project. Some efforts were more focused as follows: \newline
+\begin{enumerate}
+  \item Code Writing
+  \begin{enumerate}
+    \item best(): Kevin
+    \item crossover(): Greta
+    \item evalFunction(): Kevin (First Iteration), Joy (Second Iteration), Kevin       (Third Iteration), Greta (Final Iteration)
+    \item mutation(): Greta
+    \item popInitialize(): Kevin
+    \item select(): Kevin (First Iteration), Greta (Second Iteration)
+    \item singleEval(): Greta
+    \item updateSamp(): Greta
+  \end{enumerate}
+  \item Code Testing
+  \begin{enumerate}
+    \item test(): Joy
+  \end{enumerate}
+  \item Documentation
+  \begin{enumerate}
+    \item Introduction: Kevin
+    \item Code Structure: Greta
+    \item Testing: Joy, Kevin, Greta
+    \item Contributions: Kevin
+  \end{enumerate}
+\end{enumerate}
+
+
 
 
 \end{document}
-
-
-
-
-
-
-
-
-
 
 
 

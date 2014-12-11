@@ -253,7 +253,6 @@ select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = 
       }
     }
    
-    
     ## Update the sample
     geneSample <- updateSamp(currentGenePool, popSize, samplingProb)
     
@@ -268,13 +267,11 @@ select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = 
     for (k in seq(1, popSize, by = 2)){
       mutatedSample[k:(k+1),] <- mutation(crossedSample[k,], crossedSample[k+1,], mRate)
     }
-    
     currentGenePool <- mutatedSample
     
     ## Find fitness with evaluation function
     samplingProb <- evalFunction(X, y, currentGenePool, popSize, type, family, criterion, criFun)[3,]
     avgCriterion <- rbind(avgCriterion, mean(evalFunction(X, y, currentGenePool, popSize, type, family, criterion, criFun)[1,]))
-
   }
   
   ##### After a fixed number of iterations, we return the best model #####
@@ -284,7 +281,6 @@ select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = 
 }
 
 best <- function(X, y, pool, popSize, type, criterion, family = "gaussian", criFun = NULL){
-
   tmp <- evalFunction(X, y, pool, popSize, type, family, criterion, criFun)
 
   final <- 0
@@ -308,7 +304,6 @@ best <- function(X, y, pool, popSize, type, criterion, family = "gaussian", criF
       formula <- as.formula(paste("y ~", paste(names(X[,index2]), collapse = " + ")))
       final = glm(formula, data = cbind(y, X[,index2]), family)
     }
-
   }
 
   criFunBuilt <- eval(parse(text = criterion))
@@ -316,15 +311,3 @@ best <- function(X, y, pool, popSize, type, criterion, family = "gaussian", criF
   return(final)
 }
 
-
-### test code
-set.seed(4)
-result <- select(X, y, popSize = 50, max_iterations = 20, crossRate = 0.95, mRate = 0.001)
-v1 <- matrix(runif(200)*500,nrow = 200)
-v2 <- matrix(runif(200)*10,nrow = 200)
-error <- matrix(rnorm(200), nrow = 200)
-n <- rep(200,20)
-v3_22 <- sapply(n, runif)
-v3_22 <- (v3_22)*500
-X24 <- cbind(v1,v2,v3_22)
-y1 <- 0.5*v1 + 30*v2 +error
