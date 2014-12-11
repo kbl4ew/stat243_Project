@@ -1,0 +1,168 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage[margin=1in]{geometry}
+
+
+\graphicspath{}
+%% for inline R code: if the inline code is not correctly parsed, you will see a message
+\newcommand{\rinline}[1]{SOMETHING WRONG WITH knitr}
+%% begin.rcode setup, include=FALSE
+% opts_chunk$set(fig.path='figure/latex-', cache.path='cache/latex-')
+%% end.rcode
+\begin{document}
+\title{Stat 243 Class Project: Building a Genetic Algorithm Based Variable Selection Algorithm}
+\author{Joy Hou, Kevin Li, Greta Olesen}
+\maketitle
+
+\section{Introduction}
+
+\noindent Genetic Algorithms are search heursitics that mimic the process of Darwinian natural selection. As Givens and Hoeting (2005) states, candidate solutions to a maximization/minimization problem are considered as biological organisms represented by the genetic code which specifies the model attributes. Genetic algorithms are especially useful in large scale combinatorial and nonlinear optimization when traditional optimization techniques become untractable. Rather than exhaustively searching for the global optimal solution, the Genetic Algorithm utilizes heuristic-based search methods and returns a solution close to the global optimal solution. \newline
+
+\noindent Variable selecton problems, when presented with a large set of potential predictors, become increasingly computationally expensive. As a result, practitioners and academics have turned to search heuristics such as the Genetic Algorithm. \newline
+
+\noindent The basic genetic algorithm is as follows:
+\begin{enumerate}
+  \item Initialize the first generation of models by generating a random population of n chromosomes
+  \item Evaluate the fitness/performance f(m) of each chromosome/model m in the first generation
+  \item Create a new population by repeating the following steps until the termination condition is met:
+  \begin{enumerate}
+    \item Select n/2 pairs of parents chromosomes/models from the previous generation according to the fitness (fitter chromosomes have a greater chance to be selected)
+    \item Crossover is carried out with a crossover probability. If crossover was performed, the 2 parent chromosomes are crossed over to produce 2 children. If no crossover was performed, 2 copies of the original chromosomes/models will be kept.
+    \item Mutation is carried out with a mutation probability. When mutation is carried out, the new offspring is mutated at each locus.
+    \item Accept the children/offsprings as the next population
+  \end{enumerate}
+  \item If the terminal condition is satisfied, stop, and return the best solution in the current population. Otherwise, return to step 2
+\end{enumerate}
+
+\noindent The genetic algorithm by no means returns the optimal solution, but users can generally expect an acceptable solution with rapid convergence that often resembles that presented figure below: \newline
+
+\begin{center}
+\includegraphics[scale=0.45]{Decline_in_avgAIC.png}
+\end{center}
+
+\section{Code Structure}
+
+We utilized functions in R to carry out our Genetic Algorithm. We chose to make use of functions rather than OOP methods because the functions could be put to use in a clear, orderly manner. Consequentially, the algorithm is outlined as follows:
+
+%% begin.rcode, eval = FALSE, cache = TRUE
+result <- select(X, y, popSize, criterion, type, family, criFun, max_iterations, 
+                crossRate, mRate, zeroToOneRatio)
+%% end.rcode
+
+\noindent Please refer to the help manual for more information about each argument of \textit{select}. The function \textit{select} employs all of the auxiliary functions that are required to carry out the Genetic Algorithm. \newline
+
+\noindent The following is a list of brief descriptions of the main auxiliary functions that are utilized in the primary \textit{select} function.
+
+\subsection*{popInitialize function}
+
+This function randomly generates the initial population to start the Genetic Algorithm. Its main arguments are the desired population size and appropriate gene length (the number of potential predictors). \newline
+
+\noindent The function returns a matrix with the following dimension: \textit{popSize $\times$ geneLength}. Each row of the matrix represents an initial parent/model. Each column of the matrix represents a variable that could potential be included in the final model. \newline
+
+\noindent The function makes sure to check that each individual includes at least one variable as a predictor. If the individual does not include any predictors, it is omitted and regenerated until it fits the criteria.
+
+\subsection*{evalFunction function}
+
+The \textit{evalFunction} makes use of parallelization to evaluate each individual/model in the current population based on some criterion. \newline
+
+\noindent This is a function called \textit{singleEval} that is implemented inside \textit{evalFunction}. \textit{singleEval} evaluates a single model and returns the criterion value for that model. The criterion can be one of the built-in criterions: AIC or BIC. The user can also input their own function into the argument \textit{criFun} to evaluate the model. The user inputed \textit{criFun} is the function that should be minimized. If specified, the user's function should take in an lm object and return a single criterion value. The following is an example of a function that the user could pass as an argument for \textit{criFun}: \newline
+
+%% begin.rcode, eval = FALSE, cache = TRUE
+fun <- function(lm_ob){
+    adj_r_squared <- summary(lm_ob)$adj.r.squared
+    return(-adj_r_squared)
+}
+%% end.rcode
+
+\noindent The function \textit{evalFunction} utilizes the \textit{foreach} function in the \textit{foreach package} package to parallelize the execution of \textit{singleEval}. This optimizes the speed of the algorithm.\newline
+
+\noindent Next, the criterion values are ranked from lowest to highest for each individual/model. The probabilities are determined directly from the rank:
+$$P{i} = \frac{-rank_{i}}{\sum\limits_{i=1}^n N}$$
+
+\begin{center}
+\noindent Where $N$ is the population size (or the number of individuals in the model).\newline
+\end{center}
+
+\noindent The function returns a matrix that contains the fitness level of each individual/model, the rank for each model, and the sampling probability for each model. 
+
+\subsection*{updateSamp function}
+The \textit{updateSamp} function selects n/2 pairs from the parents individuals/models from the previous generation according to the fitness level. The sampling probabilities are determined by output from the \textit{evalFunction} from the previous iteration of the algorithm. Fitter individuals/models have a greater chance of being selected.
+
+\subsection*{crossover function}
+This function performs crossover for one pair of individuals/models depending on a crossover probability. It randomly generates a cutoff value and then crossover is performed. See the following example:\newline
+
+\begin{center}
+$Individual_1$ = 1 0 1 1 0 1
+\end{center}
+
+\begin{center}
+$Individual_2$ = 0 1 1 0 0 1 
+\end{center}
+\begin{center}
+Random Cutoff = 2, now we have:
+\end{center}
+\begin{center}
+$Individual_1$ = 1 0 1 0 0 1 
+\end{center}
+\begin{center}
+$Individual_2$ = 0 1 1 1 0 1 
+\end{center}
+
+\subsection*{mutation function}
+
+This function performs mutation on a pair of individuals/models depending on a mutation probability. A mutation is a switch from a 1 to a 0 or a 0 to a 1 in an individual/model (in other words, it's the act of changing the inclusion or exclusion of a variable in a given model). \newline
+
+\noindent Mutation can only occur in positions where both parents shared the same value. The following is an example of boxes are the positions in which mutation could occur:
+\begin{center}
+$Individual_1$ = 1 0 \fbox{1} 0 \fbox{0} \fbox{1} 
+\end{center}
+\begin{center}
+$Individual_2$ = 0 1 \fbox{1} 1 \fbox{0} \fbox{1} 
+\end{center}
+
+\noindent Now for each of the following positions, mutations will occur at the user specified $mRate$. For example, if $mRate = .01$ and the last position in $Individual_2$ is selected to be mutated, we will have the following output:
+
+\begin{center}
+$Individual_1$ = 1 0 1 0 0 1 
+\end{center}
+\begin{center}
+$Individual_2$ = 0 1 1 1 0 \fbox{0} 
+\end{center}
+
+\subsection*{select function}
+
+This is the main function that implements the genetic algorithm. The functions are implemented in the following order:
+
+\begin{enumerate}
+  \item $popInit$ to initialize the population
+  \item $evalFunction$ to get the initial sampling probabilities for each model
+  \item Repeat until convergence, or the maximum number of iterations have been completed:
+  \begin{enumerate} 
+    \item $updateSamp$: sample from the 
+    \item $crossover$: execute in a loop to iterate over all of the pairs in the population
+    \item $mutation$: execute in a loop to iterate over all of the pairs in the population
+    \item $evalFunction$: execute to get the sampling probabilities for each individual/model
+  \end{enumerate}
+\end{enumerate}
+
+
+\section{Testing}
+
+\section{Contributions}
+
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
