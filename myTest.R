@@ -2,16 +2,16 @@ testStepwise = function(){
 
   ### testing against stepwise regression result ###
   ### using mtcars data
-  X <- mtcars[,1:11]
-  y <- 1*X[,1] + 2*X[,2] + 3*X[,3] + 4*X[,4] + 5*X[,5] + error
+  X <- mtcars[,2:11]
+  y <- mtcars[,1]
   
   
   cat("Our function running ...")
   set.seed(0)
   result2 <- select(X, y, popSize = 160, max_iterations = 50, crossRate = 0.95, mRate = 0.0001)
   cat("Our function has chosen the following model:")
-  print(summary(result))
-  cat("The AIC value for our model is:",unlist(AIC(result)),"\n")
+  print(summary(result2))
+  cat("The AIC value for our model is:",unlist(AIC(result2)),"\n")
   
   cat("Now we implement stepwise regression on the dataset.")
   fullModel <- lm( mpg ~ cyl+disp+hp+drat+wt+qsec+vs+am+gear+carb, data = mtcars)
@@ -20,7 +20,7 @@ testStepwise = function(){
   print(summary(stepResult))
   cat("The AIC value for this model is:",AIC(stepResult))
   
-  if((abs(AIC(result)-AIC(stepResult))) < 10)
+  if((abs(AIC(result2)-AIC(stepResult))) < 10)
     cat("The model our function chose is close to the one that stepwise regression chose, test succeeded.")
   else
     cat("The model our function chose is not close to the one that stepwise regression chose, test failed")
