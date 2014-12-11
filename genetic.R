@@ -185,7 +185,7 @@ crossover <- function(v1, v2, geneLength, crossRate){
 ##### Auxilary Function: Mutation #####
 mutation <- function(v1, v2, mRate){
   mLoci = which(v1==v2)
-  
+  len = length(mLoci)
   # T/F: mutate or not
   mBool1 = sample(c(TRUE, FALSE), len, replace = TRUE, prob = c(mRate, 1-mRate))
   mBool2 = sample(c(TRUE, FALSE), len, replace = TRUE, prob = c(mRate, 1-mRate))
@@ -329,13 +329,3 @@ best <- function(X, y, pool, popSize, type, criterion, family = "gaussian", criF
 
 
 
-### test code
-#result <- select(X, y, popSize = 19, max_iterations = 50, crossRate = 0.95, mRate = 0.0001)
-v1 <- matrix(runif(200)*500,nrow = 200)
-v2 <- matrix(runif(200)*10,nrow = 200)
-error <- matrix(rnorm(200), nrow = 200)
-n <- rep(200,20)
-v3_22 <- sapply(n, runif)
-v3_22 <- (v3_22)*500
-X24 <- cbind(v1,v2,v3_22)
-y1 <- 0.5*v1 + 30*v2 +error

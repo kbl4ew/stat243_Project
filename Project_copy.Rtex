@@ -147,6 +147,20 @@ This is the main function that implements the genetic algorithm. The functions a
 
 
 \section{Testing}
+\noindent We have rigorously tested each auxiliary function and checked that they return the desired results. For example
+%% begin.rcode
+testCrossOver()
+%% end.rcode
+
+\noindent To test the overall function, we first tested it against stepwise regression result. We did variable selection on the "mtcars" dataset using our function and stepwise regression. The results are shown below:
+%% begin.rcode
+testStepwise()
+%% end.rcode
+
+\noindentAnother test of the overall function is done through a simulated dataset. We generated an outcome variable based on the first 5 variables in the "mtcars" data set. Then we used the 5 variables together with 6 other "noise" variables as the variable pools for our function to select from. The results are shown below:
+%% begin.rcode
+testSim()
+%% end.rcode
 
 \section{Contributions}
 
