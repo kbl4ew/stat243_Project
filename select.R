@@ -94,7 +94,7 @@ popInitialize <- function(popSize = 50, geneLength = 0, zeroToOneRatio = 1){
 ### Second row of result rank
 #library(data.table)
 
-singleEval <- function(singleGene, X, y, type, criterion, criFun, family){
+singleEval <- function(singleGene, X, y, type, criterion, criFun, family){ 
   if(type == "lm")
     fit <- lm(y~X[,which(singleGene != 0)])
   if(type == "glm")
@@ -214,7 +214,7 @@ mutation <- function(v1, v2, mRate){
 
 select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = "lm", family = "gaussian", criFun = NULL, max_iterations = 500, min_iterations = 50, crossRate = 0.95, mRate = 0.001, zeroToOneRatio = 1){
   ##### Defense coding #####
-  #X <- as.matrix(X);
+  X <- as.data.frame(X);
   #y <- as.vector(y);
   if((popSize%%2)!=0){
     #warning("The number of models has ")
