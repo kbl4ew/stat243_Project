@@ -46,14 +46,12 @@
 # The code is an adoption of the basic generic algorith implementation in the genalg package in R
 
 ##### Implementation #####
-popInitialize <- function(popSize = 0, geneLength = 0, zeroToOneRatio){
+popInitialize <- function(popSize = 50, geneLength = 0, zeroToOneRatio = 1){
   
-  if(is.na(zeroToOneRatio)){
-    zeroToOneRation = 0;    
+  if(geneLength == 0){
+    stop("geneLength cannot be zero.")
   }
-  else{
-    #
-  }
+
   pop <- matrix(nrow = popSize, ncol = geneLength);
   
   ##### Randomly initialize the first generation #####
@@ -69,12 +67,12 @@ popInitialize <- function(popSize = 0, geneLength = 0, zeroToOneRatio){
 }
 
 ##### Auxilary Function 2: EvalFunction #####
-library(parallel) 
-library(doParallel)
-library(foreach)
-library(iterators)
-nCores <- 4  
-registerDoParallel(nCores) 
+#library(parallel) 
+#library(doParallel)
+#library(foreach)
+#library(iterators)
+#nCores <- 4  
+#registerDoParallel(nCores) 
 # to addd
 ##### Evaluation Function #####
 ##### Descritption ######
@@ -96,23 +94,33 @@ registerDoParallel(nCores)
 ### Second row of result rank
 #library(data.table)
 
-singleEval <- function(singleGene, X, y, type, criterion, criFun, family){
+singleEval <- function(singleGene, X, y, type, criterion, criFun, family){ 
   if(type == "lm")
-    fit <- lm(y~as.matrix(X[,which(singleGene != 0)]))
+    fit <- lm(y~X[,which(singleGene != 0)])
   if(type == "glm")
-    fit <- glm(as.vector(y)~as.matrix(X[,which(singleGene != 0)]), family)
+    fit <- glm(as.vector(y)~X[,which(singleGene != 0)], family)
   
   if(is.null(criFun)){    # Dont have their own criterion function written
     criFunBuilt <- eval(parse(text = criterion))
     criValue <- criFunBuilt(fit)
   }
-  else 
-    criValue = criFun(fit)   # use the function inputted by the user; CHECK FOR ERRORS?
+  else {
+     criValue = try(criFun(fit), silent = TRUE)   # use the function inputted by the user; CHECK FOR ERRORS?
+     if(!is.null(attributes(criValue)$class))
+       if(attributes(criValue)$class == "try-error")
+         stop(cat(paste("criFun is not compatible. The following error occured:\n", geterrmessage())))
+     if(length(criValue)!=1)
+       stop("Dimension of output for criFun greater than 1.")
+     if(!is.numeric(criValue)!=1)
+       stop("Output for criFun is not numeric.")
+     return(criValue)
+    return(0)
+  }
   return(criValue)
 }
 
 
-evalFunction <- function(currentGenePool, popSize, type = "lm", family = "gaussian", criterion = "AIC", criFun = NULL){
+evalFunction <- function(X, y, currentGenePool, popSize, type = "lm", family = "gaussian", criterion = "AIC", criFun = NULL){
   if((popSize %% 2)!= 0){
     message("Warning: The size of the population has been rounded to the largest even numer")
     popSize <- popSize + 1;
@@ -122,10 +130,13 @@ evalFunction <- function(currentGenePool, popSize, type = "lm", family = "gaussi
     stop(paste(criterion, "is not a valid criterion. Please use AIC or BIC."))
   
   if(!is.null(criFun) & !is.function(criFun))
-    stop("criFun input is not a function.")
+   stop("criFun input is not a function.")
   
   if(type != "lm" & type != "glm")
     stop("Regression must be of type 'lm' or 'glm'")
+  
+  if(family == "binomial" & length(unique(na.omit(y)))!= 2)
+   stop("Logistic regression requires 'y' to be binary")
   
   geneLength <- dim(currentGenePool)[2]
   result <- rep(NA, popSize)
@@ -154,7 +165,7 @@ updateSamp <- function(x, popSize, weights){
 }
 
 ##### Auxilary Function: Crossover #####
-crossover <- function(v1, v2, geneLength, crossRate = 1){
+crossover <- function(v1, v2, geneLength, crossRate){
   crossBool = sample(c(TRUE, FALSE), 1, prob = c(crossRate, 1-crossRate))
   
   if(crossBool){
@@ -198,38 +209,37 @@ mutation <- function(v1, v2, mRate){
 
 
 ##### Clear out later #####
-X <- mtcars[,2:11]
-y <- mtcars[,1]
+#X <- mtcars[,2:11]
+#y <- mtcars[,1]
 
-select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = "lm", family = NA, criFun = NULL, max_iterations = 500, min_iterations = 50, crossRate = NA, mRate = NA, zeroToOneRatio = 2){
+select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = "lm", family = "gaussian", criFun = NULL, max_iterations = 500, min_iterations = 50, crossRate = 0.95, mRate = 0.001, zeroToOneRatio = 1){
   ##### Defense coding #####
-  X <- as.matrix(X);
-  y <- as.vector(y);
-  if(is.na(mRate)){
-    mRate = 1/(dim(X)[1]);
-  }
-  
+  X <- as.data.frame(X);
+  #y <- as.vector(y);
   if((popSize%%2)!=0){
     #warning("The number of models has ")
-    print("Warning: The number of models has been incremented to the nearest even number")
+    #print("Warning: The number of models has been incremented to the nearest even number")
     warning("The number of models has been incremented to the nearest even number")
     popSize <- popSize + 1
   }
-  
-  #if(is.null(evalFunction)){
-  #  stop("Please provide an evaluation function! Exiting from the function")
-  #}
+
   
   if(is.null(X)){
     stop("Please provide the predictors! Exiting from the function")
   }
   
-  if(is.null(y)){
-    stop("Please provide the independent variable/outcome! Exiting from the function")
+   if(is.null(y)){
+     stop("Please provide the independent variable/outcome! Exiting from the function")
   }
-  
-  
-  
+  library(parallel)
+  library(doParallel)
+  library(foreach)
+  library(iterators)
+  nCores <- 4  
+#   checkLoaded <- try(registerDoParallel(nCores), silent = TRUE)
+#   if(as.character(attributes(checkLoaded)[1] == "try-error")){
+#     stop(cat("Please load the following packages before running select:\n1) parallel\n2) doParallel\n3) foreach\n4) iterators")) 
+#   }
   ##### Beginning of the generic algorithm #####
   geneLength <- dim(X)[2];
   ##### Initializing the first generation of individuals/ models
@@ -237,8 +247,8 @@ select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = 
   currentGenePool <- initialPopulation;
   ### Calculating the sampling probabilities for the first generations of individuals/models
   #samplingProb <- evalFunction(currenGenePool, type, criterion, family, criFun)[3,]
-  samplingProb <- evalFunction(currentGenePool, popSize, type, family, criterion, criFun)[3,];
-  avgCriterion <- mean(evalFunction(currentGenePool, popSize, type, family, criterion, criFun)[1,]);
+  samplingProb <- evalFunction(X, y, currentGenePool, popSize, type, family, criterion, criFun)[3,];
+  avgCriterion <- mean(evalFunction(X, y, currentGenePool, popSize, type, family, criterion, criFun)[1,]);
   ### While loop to handle convergence/ exceedance of min iteration/ capped by max iteration
   #iter = 0;
   ### Condition to be satisfied 
@@ -252,42 +262,42 @@ select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = 
     crossedSample <- matrix(NA, nrow = popSize, ncol = geneLength);
     #for(i in seq(1, popSize, by = 2))
     #  xCrossed[i:(i+1),] <- crossover(xSamp[i,], xSamp[i+1,], popSize, geneLength, crossRate)
-    for(i in seq(1, popSize, by = 2)){
+    for(j in seq(1, popSize, by = 2)){
       #print(i)
-      crossedSample[i:(i+1),] <- crossover(geneSample[i,], geneSample[i+1, ], geneLength, crossRate)
+      crossedSample[j:(j+1),] <- crossover(geneSample[j,], geneSample[j+1, ], geneLength, crossRate)
     }
     #
     #xMut = matrix(NA, nrow = popSize, ncol = geneLength)
     mutatedSample <- matrix(NA, nrow = popSize, ncol = geneLength)
     #for(i in seq(1, popSize, by = 2))
     #  xMut[i:(i+1),] <- mutation(xCrossed[i,], xCrossed[i+1,], mRate)  
-    for (i in seq(1, popSize, by = 2)){
+    for (k in seq(1, popSize, by = 2)){
       #mutatedSample <- mutation(crossedSample[i,], crossedSample[i+1,], popSize, mRate)
-      mutatedSample[i:(i+1),] <- mutation(crossedSample[i,], crossedSample[i+1,], mRate)
+      mutatedSample[k:(k+1),] <- mutation(crossedSample[k,], crossedSample[k+1,], mRate)
     }
     
     ### Here we would add the evaluation function ###
     # weights = AIC(  )
     currentGenePool <- mutatedSample
-    samplingProb <- evalFunction(currentGenePool, popSize, type, family, criterion, criFun)[3,]
-    avgCriterion <- rbind(avgCriterion, mean(evalFunction(currentGenePool, popSize, type, family, criterion, criFun)[1,]))
+    samplingProb <- evalFunction(X, y, currentGenePool, popSize, type, family, criterion, criFun)[3,]
+    avgCriterion <- rbind(avgCriterion, mean(evalFunction(X, y, currentGenePool, popSize, type, family, criterion, criFun)[1,]))
     #x = xMut # Update x-matrix with our new one!
     #print(x) # take out later
   }
   
   ##### After a fixed number of iterations, we return the best model #####
   #return(currentGenePool)
-  final <- best(currentGenePool, popSize, type, criterion)
+  final <- best(X, y, currentGenePool, popSize, type, criterion)
   #print(avgAIC)
-  plot(avgCriterion)
+  plot(avgCriterion, main='Average Criterion Values vs Iteration Number', xlab = "Iteration", ylab ="Average Criterion Value")
   ##### Print the best model #####
   return(final)
 }
 
-best <- function(pool, popSize, type, criterion, family = NA, criFun = NULL){
+best <- function(X, y, pool, popSize, type, criterion, family = "gaussian", criFun = NULL){
   #print('In best')
   
-  tmp <- evalFunction(pool, popSize, type, family, criterion, criFun)
+  tmp <- evalFunction(X, y, pool, popSize, type, family, criterion, criFun)
   #print(result)
   final <- 0
   if(type == "lm"){
@@ -296,22 +306,24 @@ best <- function(pool, popSize, type, criterion, family = NA, criFun = NULL){
     #print(index)
     index2 <- which(pool[index,] != 0, arr.ind = T)
     #print(index2)
-    final <- lm(y~as.matrix(X[,index2]))
+    final <- lm(y~X[,index2])
     #print('success')
   }
   else if (type == "glm"){
     #print('glm flow')
     index <- which(tmp[2,] == min(tmp[2,]), arr.ind = T)
     index2 <- which(pool[index,] != 0, arr.ind = T)[1]
-    final <- glm(as.vector(y)~as.matrix(X[,index2]),family)
+    final <- glm(as.vector(y)~X[,index2],family)
     
   }
   ### TO be fixed here
   else{
     final <- 0
   }
-  print(final)
-  print(paste("The resulting criterion is: ", criterion, AIC(final)))
+  #print(summary(final))
+  criFunBuilt <- eval(parse(text = criterion))
+  criValue <- criFunBuilt(final)
+  #print(paste("The resulting criterion is: ", criterion, criValue))
   return(final)
 }
 
@@ -319,6 +331,13 @@ best <- function(pool, popSize, type, criterion, family = NA, criFun = NULL){
 
 
 ### test code
-result <- select(X, y, popSize = 19, max_iterations = 50, crossRate = 0.95, mRate = 0.0001)
-
+#result <- select(X, y, popSize = 19, max_iterations = 50, crossRate = 0.95, mRate = 0.0001)
+v1 <- matrix(runif(200)*500,nrow = 200)
+v2 <- matrix(runif(200)*10,nrow = 200)
+error <- matrix(rnorm(200), nrow = 200)
+n <- rep(200,20)
+v3_22 <- sapply(n, runif)
+v3_22 <- (v3_22)*500
+X24 <- cbind(v1,v2,v3_22)
+y1 <- 0.5*v1 + 30*v2 +error
 

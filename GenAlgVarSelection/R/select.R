@@ -10,8 +10,8 @@
 
 ##### Output: #####
 ### result <- the best model based on the evaluation criterion
-X <- mtcars[,2:11]
-y <- mtcars[,1]
+#X <- mtcars[,2:11]
+#y <- mtcars[,1]
 
 
 
@@ -105,21 +105,22 @@ singleEval <- function(singleGene, X, y, type, criterion, criFun, family){
     criValue <- criFunBuilt(fit)
   }
   else {
-    criValue = try(criFun(fit), silent = TRUE)   # use the function inputted by the user; CHECK FOR ERRORS?
-    if(!is.null(attributes(criValue)$class))
-      if(attributes(criValue)$class == "try-error")
-        stop(cat(paste("criFun is not compatible. The following error occured:\n", geterrmessage())))
-    if(length(criValue)!=1)
-      stop("Dimension of output for criFun greater than 1.")
-    if(!is.numeric(criValue)!=1)
-      stop("Output for criFun is not numeric.")
-    return(criValue)
+     criValue = try(criFun(fit), silent = TRUE)   # use the function inputted by the user; CHECK FOR ERRORS?
+     if(!is.null(attributes(criValue)$class))
+       if(attributes(criValue)$class == "try-error")
+         stop(cat(paste("criFun is not compatible. The following error occured:\n", geterrmessage())))
+     if(length(criValue)!=1)
+       stop("Dimension of output for criFun greater than 1.")
+     if(!is.numeric(criValue)!=1)
+       stop("Output for criFun is not numeric.")
+     return(criValue)
+    return(0)
   }
   return(criValue)
 }
 
 
-evalFunction <- function(currentGenePool, popSize, type = "lm", family = "gaussian", criterion = "AIC", criFun = NULL){
+evalFunction <- function(X, y, currentGenePool, popSize, type = "lm", family = "gaussian", criterion = "AIC", criFun = NULL){
   if((popSize %% 2)!= 0){
     message("Warning: The size of the population has been rounded to the largest even numer")
     popSize <- popSize + 1;
@@ -129,13 +130,13 @@ evalFunction <- function(currentGenePool, popSize, type = "lm", family = "gaussi
     stop(paste(criterion, "is not a valid criterion. Please use AIC or BIC."))
   
   if(!is.null(criFun) & !is.function(criFun))
-    stop("criFun input is not a function.")
+   stop("criFun input is not a function.")
   
   if(type != "lm" & type != "glm")
     stop("Regression must be of type 'lm' or 'glm'")
   
   if(family == "binomial" & length(unique(na.omit(y)))!= 2)
-    stop("Logistic regression requires 'y' to be binary")
+   stop("Logistic regression requires 'y' to be binary")
   
   geneLength <- dim(currentGenePool)[2]
   result <- rep(NA, popSize)
@@ -225,18 +226,15 @@ select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = 
     warning("The number of models has been incremented to the nearest even number")
     popSize <- popSize + 1
   }
-  
-  #if(is.null(evalFunction)){
-  #  stop("Please provide an evaluation function! Exiting from the function")
-  #}
+
   
   if(is.null(X)){
     stop("Please provide the predictors! Exiting from the function")
   }
   
-  if(is.null(y)){
-    stop("Please provide the independent variable/outcome! Exiting from the function")
-  }
+#   if(is.null(y)){
+#     stop("Please provide the independent variable/outcome! Exiting from the function")
+#  }
   
   
   
@@ -247,8 +245,8 @@ select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = 
   currentGenePool <- initialPopulation;
   ### Calculating the sampling probabilities for the first generations of individuals/models
   #samplingProb <- evalFunction(currenGenePool, type, criterion, family, criFun)[3,]
-  samplingProb <- evalFunction(currentGenePool, popSize, type, family, criterion, criFun)[3,];
-  avgCriterion <- mean(evalFunction(currentGenePool, popSize, type, family, criterion, criFun)[1,]);
+  samplingProb <- evalFunction(X, y, currentGenePool, popSize, type, family, criterion, criFun)[3,];
+  avgCriterion <- mean(evalFunction(X, y, currentGenePool, popSize, type, family, criterion, criFun)[1,]);
   ### While loop to handle convergence/ exceedance of min iteration/ capped by max iteration
   #iter = 0;
   ### Condition to be satisfied 
@@ -262,42 +260,42 @@ select <- function(X = NULL, y = NULL, popSize = 200, criterion = "AIC", type = 
     crossedSample <- matrix(NA, nrow = popSize, ncol = geneLength);
     #for(i in seq(1, popSize, by = 2))
     #  xCrossed[i:(i+1),] <- crossover(xSamp[i,], xSamp[i+1,], popSize, geneLength, crossRate)
-    for(i in seq(1, popSize, by = 2)){
+    for(j in seq(1, popSize, by = 2)){
       #print(i)
-      crossedSample[i:(i+1),] <- crossover(geneSample[i,], geneSample[i+1, ], geneLength, crossRate)
+      crossedSample[j:(j+1),] <- crossover(geneSample[j,], geneSample[j+1, ], geneLength, crossRate)
     }
     #
     #xMut = matrix(NA, nrow = popSize, ncol = geneLength)
     mutatedSample <- matrix(NA, nrow = popSize, ncol = geneLength)
     #for(i in seq(1, popSize, by = 2))
     #  xMut[i:(i+1),] <- mutation(xCrossed[i,], xCrossed[i+1,], mRate)  
-    for (i in seq(1, popSize, by = 2)){
+    for (k in seq(1, popSize, by = 2)){
       #mutatedSample <- mutation(crossedSample[i,], crossedSample[i+1,], popSize, mRate)
-      mutatedSample[i:(i+1),] <- mutation(crossedSample[i,], crossedSample[i+1,], mRate)
+      mutatedSample[k:(k+1),] <- mutation(crossedSample[k,], crossedSample[k+1,], mRate)
     }
     
     ### Here we would add the evaluation function ###
     # weights = AIC(  )
     currentGenePool <- mutatedSample
-    samplingProb <- evalFunction(currentGenePool, popSize, type, family, criterion, criFun)[3,]
-    avgCriterion <- rbind(avgCriterion, mean(evalFunction(currentGenePool, popSize, type, family, criterion, criFun)[1,]))
+    samplingProb <- evalFunction(X, y, currentGenePool, popSize, type, family, criterion, criFun)[3,]
+    avgCriterion <- rbind(avgCriterion, mean(evalFunction(X, y, currentGenePool, popSize, type, family, criterion, criFun)[1,]))
     #x = xMut # Update x-matrix with our new one!
     #print(x) # take out later
   }
   
   ##### After a fixed number of iterations, we return the best model #####
   #return(currentGenePool)
-  final <- best(currentGenePool, popSize, type, criterion)
+  final <- best(X, y, currentGenePool, popSize, type, criterion)
   #print(avgAIC)
   plot(avgCriterion)
   ##### Print the best model #####
   return(final)
 }
 
-best <- function(pool, popSize, type, criterion, family = "gaussian", criFun = NULL){
+best <- function(X, y, pool, popSize, type, criterion, family = "gaussian", criFun = NULL){
   #print('In best')
   
-  tmp <- evalFunction(pool, popSize, type, family, criterion, criFun)
+  tmp <- evalFunction(X, y, pool, popSize, type, family, criterion, criFun)
   #print(result)
   final <- 0
   if(type == "lm"){
@@ -332,5 +330,12 @@ best <- function(pool, popSize, type, criterion, family = "gaussian", criFun = N
 
 ### test code
 #result <- select(X, y, popSize = 19, max_iterations = 50, crossRate = 0.95, mRate = 0.0001)
-
+v1 <- matrix(runif(200)*500,nrow = 200)
+v2 <- matrix(runif(200)*10,nrow = 200)
+error <- matrix(rnorm(200), nrow = 200)
+n <- rep(200,20)
+v3_22 <- sapply(n, runif)
+v3_22 <- (v3_22)*500
+X24 <- cbind(v1,v2,v3_22)
+y1 <- 0.5*v1 + 30*v2 +error
 
